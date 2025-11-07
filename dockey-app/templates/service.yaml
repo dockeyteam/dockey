@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "dockey.fullname" . }}
+  name: {{ include "dockey-app.fullname" . }}
   labels:
-    {{- include "dockey.labels" . | nindent 4 }}
+    {{- include "dockey-app.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -12,4 +12,4 @@ spec:
       protocol: TCP
       name: http
   selector:
-    {{- include "dockey.selectorLabels" . | nindent 4 }}
+    {{- include "dockey-app.selectorLabels" . | nindent 4 }}
