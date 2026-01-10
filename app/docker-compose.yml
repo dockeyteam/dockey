@@ -1,0 +1,172 @@
+version: '3.8'
+
+services:
+  # PostgreSQL for docs-service
+  docsdb:
+    image: postgres:15-alpine
+    container_name: dockey-docsdb
+    environment:
+      POSTGRES_DB: docsdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - docsdb_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d docsdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dockey-network
+
+  # PostgreSQL for user-service
+  usersdb:
+    image: postgres:15-alpine
+    container_name: dockey-usersdb
+    environment:
+      POSTGRES_DB: usersdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    ports:
+      - "5433:5432"
+    volumes:
+      - usersdb_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d usersdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dockey-network
+
+  # PostgreSQL for Keycloak
+  keycloakdb:
+    image: postgres:15-alpine
+    container_name: dockey-keycloakdb
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    ports:
+      - "5434:5432"
+    volumes:
+      - keycloakdb_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak -d keycloak"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dockey-network
+
+  # Keycloak
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: dockey-keycloak
+    command: start-dev --import-realm
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloakdb:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: true
+      KC_METRICS_ENABLED: true
+      KC_HOSTNAME_STRICT: false
+      KC_HOSTNAME_STRICT_HTTPS: false
+      KC_HTTP_ENABLED: true
+    ports:
+      - "8180:8080"
+    volumes:
+      - ./keycloak/dockey-realm.json:/opt/keycloak/data/import/dockey-realm.json:ro
+    depends_on:
+      keycloakdb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '200 OK'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    networks:
+      - dockey-network
+    restart: unless-stopped
+
+  # Docs Service
+  docs-service:
+    build:
+      context: ./docs-service
+      dockerfile: Dockerfile
+    container_name: dockey-docs-service
+    ports:
+      - "8080:8080"
+    environment:
+      # Database connection for Docker network
+      KUMULUZEE_DATASOURCES0_CONNECTIONURL: jdbc:postgresql://docsdb:5432/docsdb
+      KUMULUZEE_DATASOURCES0_USERNAME: postgres
+      KUMULUZEE_DATASOURCES0_PASSWORD: postgres
+    depends_on:
+      docsdb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - dockey-network
+    restart: unless-stopped
+
+  # User Service
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: dockey-user-service
+    ports:
+      - "8081:8081"
+    environment:
+      # Database connection for Docker network
+      KUMULUZEE_DATASOURCES0_CONNECTIONURL: jdbc:postgresql://usersdb:5432/usersdb
+      KUMULUZEE_DATASOURCES0_USERNAME: postgres
+      KUMULUZEE_DATASOURCES0_PASSWORD: postgres
+      # Keycloak configuration
+      KEYCLOAK_AUTHSERVERURL: http://keycloak:8080
+      KEYCLOAK_REALM: dockey
+      # MicroProfile JWT configuration - disable issuer check for dev
+      # MP_JWT_VERIFY_PUBLICKEY_LOCATION: http://keycloak:8080/realms/dockey/protocol/openid-connect/certs
+      # MP_JWT_VERIFY_ISSUER: none
+    depends_on:
+      usersdb:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - dockey-network
+    restart: unless-stopped
+
+networks:
+  dockey-network:
+    driver: bridge
+    name: dockey-network
+
+volumes:
+  docsdb_data:
+    name: dockey-docsdb-data
+  usersdb_data:
+    name: dockey-usersdb-data
+  keycloakdb_data:
+    name: dockey-keycloakdb-data

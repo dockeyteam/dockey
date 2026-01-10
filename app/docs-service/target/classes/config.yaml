@@ -1,0 +1,73 @@
+kumuluzee:
+  name: docs-service
+  version: 1.0.0
+  env:
+    name: dev
+  
+  server:
+    http:
+      port: 8080
+    base-url: http://localhost:8080
+  
+  datasources:
+    - jndi-name: jdbc/DocsDS
+      connection-url: jdbc:postgresql://localhost:5432/docsdb
+      username: postgres
+      password: postgres
+      max-pool-size: 20
+      pool:
+        max-size: 20
+  
+  logs:
+    config-file: '<?xml version="1.0" encoding="UTF-8"?>
+                  <Configuration name="docs-service">
+                      <Appenders>
+                          <Console name="console" target="SYSTEM_OUT">
+                              <PatternLayout pattern="%d %p %marker %m %X %ex %n"/>
+                          </Console>
+                      </Appenders>
+                      <Loggers>
+                          <Root level="info">
+                              <AppenderRef ref="console"/>
+                          </Root>
+                      </Loggers>
+                  </Configuration>'
+  
+  cors-filter:
+    enabled: true
+    annotations:
+      allow-generic-http-requests: true
+      allow-origin: "*"
+      allow-subdomains: false
+      supported-methods: "GET, POST, PUT, DELETE, OPTIONS, HEAD"
+      supported-headers: "*"
+      exposed-headers: "X-Total-Count"
+      supports-credentials: true
+      max-age: 3600
+
+  openapi-mp:
+    enabled: true
+    ui:
+      enabled: true
+      mapping: /openapi/ui
+      server-auto-config:
+        enabled: true
+    spec:
+      mapping: /openapi/spec
+
+  health:
+    checks:
+      data-source-health-check:
+        type: liveness
+        jndi-name: jdbc/DocsDS
+    servlet:
+      mapping: /health
+      enabled: true
+
+  metrics:
+    web-instrumentation:
+      - name: documents-endpoint
+        url-pattern: /v1/documents/*
+    servlet:
+      mapping: /metrics
+      enabled: true

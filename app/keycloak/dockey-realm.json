@@ -1,0 +1,63 @@
+{
+  "realm": "dockey",
+  "enabled": true,
+  "displayName": "Dockey",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "clients": [
+    {
+      "clientId": "dockey-user-service",
+      "name": "Dockey User Service",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "dockey-user-service-secret-key-123",
+      "redirectUris": ["*"],
+      "webOrigins": ["*"],
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "fullScopeAllowed": true
+    },
+    {
+      "clientId": "dockey-frontend",
+      "name": "Dockey Frontend",
+      "enabled": true,
+      "redirectUris": [
+        "http://localhost:3000/*",
+        "http://localhost:8080/*",
+        "http://localhost:8081/*"
+      ],
+      "webOrigins": [
+        "http://localhost:3000",
+        "http://localhost:8080",
+        "http://localhost:8081"
+      ],
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "fullScopeAllowed": true
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "ADMIN",
+        "description": "Administrator role"
+      },
+      {
+        "name": "USER",
+        "description": "Regular user role"
+      }
+    ]
+  },
+  "defaultRoles": ["USER"],
+  "passwordPolicy": "length(8)"
+}

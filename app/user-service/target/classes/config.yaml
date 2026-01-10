@@ -1,0 +1,93 @@
+kumuluzee:
+  name: user-service
+  version: 1.0.0
+  env:
+    name: dev
+  
+  server:
+    http:
+      port: 8081
+    base-url: http://localhost:8081
+  
+  datasources:
+    - jndi-name: jdbc/UsersDS
+      connection-url: jdbc:postgresql://usersdb:5432/usersdb
+      username: postgres
+      password: postgres
+      max-pool-size: 20
+      pool:
+        max-size: 20
+  
+  logs:
+    config-file: '<?xml version="1.0" encoding="UTF-8"?>
+                  <Configuration name="user-service">
+                      <Appenders>
+                          <Console name="console" target="SYSTEM_OUT">
+                              <PatternLayout pattern="%d %p %marker %m %X %ex %n"/>
+                          </Console>
+                      </Appenders>
+                      <Loggers>
+                          <Root level="info">
+                              <AppenderRef ref="console"/>
+                          </Root>
+                      </Loggers>
+                  </Configuration>'
+  
+  cors-filter:
+    enabled: true
+    annotations:
+      allow-generic-http-requests: true
+      allow-origin: "*"
+      allow-subdomains: false
+      supported-methods: "GET, POST, PUT, DELETE, OPTIONS, HEAD"
+      supported-headers: "*"
+      exposed-headers: "X-Total-Count"
+      supports-credentials: true
+      max-age: 3600
+
+  openapi-mp:
+    enabled: true
+    ui:
+      enabled: true
+      mapping: /openapi/ui
+      server-auto-config:
+        enabled: true
+    spec:
+      mapping: /openapi/spec
+
+  health:
+    checks:
+      data-source-health-check:
+        type: liveness
+        jndi-name: jdbc/UsersDS
+    servlet:
+      mapping: /health
+      enabled: true
+
+  metrics:
+    web-instrumentation:
+      - name: users-endpoint
+        url-pattern: /v1/users/*
+    servlet:
+      mapping: /metrics
+      enabled: true
+
+  graphql-mp:
+    ui:
+      enabled: true
+
+mp:
+  jwt:
+    verify:
+      publickey:
+        location: http://keycloak:8080/realms/dockey/protocol/openid-connect/certs
+      # Don't validate issuer in dev - tokens have localhost:8180 but service sees keycloak:8080
+      issuer: none
+
+keycloak:
+  auth-server-url: http://keycloak:8080
+  realm: dockey
+  admin:
+    username: admin
+    password: admin
+
