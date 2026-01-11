@@ -90,11 +90,16 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request'
-    
+
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Azure Login
         uses: azure/login@v2
         with:
@@ -128,28 +133,14 @@ jobs:
 
       - name: Deploy to AKS with Helm
         run: |
-          # Check if release exists
-          if helm list -n dockey | grep -q dockey; then
-            echo "Upgrading existing release..."
-            helm upgrade dockey ./helm/dockey \
-              -n dockey \
-              --create-namespace \
-              --set services.comments.image.tag=${{ env.IMAGE_TAG }} \
-              --set services.docs.image.tag=${{ env.IMAGE_TAG }} \
-              --set services.user.image.tag=${{ env.IMAGE_TAG }} \
-              --wait \
-              --timeout 10m
-          else
-            echo "Installing new release..."
-            helm install dockey ./helm/dockey \
-              -n dockey \
-              --create-namespace \
-              --set services.comments.image.tag=${{ env.IMAGE_TAG }} \
-              --set services.docs.image.tag=${{ env.IMAGE_TAG }} \
-              --set services.user.image.tag=${{ env.IMAGE_TAG }} \
-              --wait \
-              --timeout 10m
-          fi
+          helm upgrade --install dockey ./helm/dockey \
+            -n dockey \
+            --create-namespace \
+            --set services.comments.image.tag=${{ env.IMAGE_TAG }} \
+            --set services.docs.image.tag=${{ env.IMAGE_TAG }} \
+            --set services.user.image.tag=${{ env.IMAGE_TAG }} \
+            --wait \
+            --timeout 10m
 
       - name: Verify deployment
         run: |
