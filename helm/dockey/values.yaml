@@ -1,14 +1,14 @@
-# Free Tier Optimized Values
-# This values file is optimized for AKS free tier clusters with limited resources
-# Use with: helm install dockey ./helm/dockey -n dockey -f helm/dockey/values-free-tier.yaml
+# Stability-Focused Values (No Architectural Changes)
+# Usage: helm upgrade --install dockey ./helm/dockey -n dockey -f values.yaml
 
 global:
   namespace: dockey
   imageRegistry: dockey.azurecr.io
   imagePullPolicy: Always
   storageClass: managed-csi
+  # CRITICAL: Forces Java to use less RAM and release it back to the OS
+  javaOpts: "-XX:+UseSerialGC -Xss256k -XX:MaxRAMPercentage=75.0 -Djava.security.egd=file:/dev/./urandom"
 
-# Application Services - Minimal resources
 services:
   comments:
     enabled: true
@@ -19,24 +19,21 @@ services:
     port: 8082
     resources:
       requests:
-        memory: "64Mi"
+        memory: "128Mi"
         cpu: "50m"
       limits:
-        memory: "128Mi"
-        cpu: "100m"
+        memory: "350Mi" # Minimum viability for Spring Boot
+        cpu: "500m"     # Allow CPU burst during startup
     env:
+      JAVA_TOOL_OPTIONS: ${{ .Values.global.javaOpts }}
       mongodbDatabase: "commentsdb"
       kafkaBootstrapServers: "kafka:9092"
       keycloakAuthServerUrl: "http://keycloak:8080"
       keycloakRealm: "dockey"
     healthCheck:
       liveness:
-        initialDelaySeconds: 90
-        periodSeconds: 30
-        timeoutSeconds: 5
-      readiness:
-        initialDelaySeconds: 60
-        periodSeconds: 10
+        initialDelaySeconds: 120
+        periodSeconds: 20
         timeoutSeconds: 5
 
   docs:
@@ -48,24 +45,20 @@ services:
     port: 8080
     resources:
       requests:
-        memory: "64Mi"
+        memory: "128Mi"
         cpu: "50m"
       limits:
-        memory: "128Mi"
-        cpu: "100m"
+        memory: "350Mi"
+        cpu: "500m"
     env:
+      JAVA_TOOL_OPTIONS: ${{ .Values.global.javaOpts }}
       databaseName: "docsdb"
       kafkaBootstrapServers: "kafka:9092"
       kafkaConsumerGroupId: "docs-service-group"
     healthCheck:
       liveness:
-        initialDelaySeconds: 90
-        periodSeconds: 30
-        timeoutSeconds: 5
-      readiness:
-        initialDelaySeconds: 60
-        periodSeconds: 10
-        timeoutSeconds: 5
+        initialDelaySeconds: 120
+        periodSeconds: 20
 
   user:
     enabled: true
@@ -76,12 +69,13 @@ services:
     port: 8081
     resources:
       requests:
-        memory: "64Mi"
+        memory: "128Mi"
         cpu: "50m"
       limits:
-        memory: "128Mi"
-        cpu: "100m"
+        memory: "350Mi"
+        cpu: "500m"
     env:
+      JAVA_TOOL_OPTIONS: ${{ .Values.global.javaOpts }}
       databaseName: "usersdb"
       keycloakAuthServerUrl: "http://keycloak:8080"
       keycloakRealm: "dockey"
@@ -89,17 +83,12 @@ services:
       kafkaConsumerGroupId: "user-service-group"
     healthCheck:
       liveness:
-        initialDelaySeconds: 90
-        periodSeconds: 30
-        timeoutSeconds: 5
-      readiness:
-        initialDelaySeconds: 60
-        periodSeconds: 10
-        timeoutSeconds: 5
+        initialDelaySeconds: 120
+        periodSeconds: 20
 
-# Databases - Minimal resources
 databases:
   postgres:
+    # Kept separate as requested
     docs:
       enabled: true
       image:
@@ -113,8 +102,8 @@ databases:
           memory: "64Mi"
           cpu: "50m"
         limits:
-          memory: "128Mi"
-          cpu: "100m"
+          memory: "256Mi" # Slightly increased to prevent OOM under load
+          cpu: "200m"
 
     users:
       enabled: true
@@ -129,8 +118,8 @@ databases:
           memory: "64Mi"
           cpu: "50m"
         limits:
-          memory: "128Mi"
-          cpu: "100m"
+          memory: "256Mi"
+          cpu: "200m"
 
     keycloak:
       enabled: true
@@ -145,8 +134,8 @@ databases:
           memory: "64Mi"
           cpu: "50m"
         limits:
-          memory: "128Mi"
-          cpu: "100m"
+          memory: "256Mi"
+          cpu: "200m"
 
   mongodb:
     comments:
@@ -159,13 +148,12 @@ databases:
         size: "2Gi"
       resources:
         requests:
-          memory: "64Mi"
+          memory: "128Mi"
           cpu: "50m"
         limits:
-          memory: "128Mi"
-          cpu: "100m"
+          memory: "256Mi"
+          cpu: "200m"
 
-# Messaging - Minimal resources
 messaging:
   zookeeper:
     enabled: true
@@ -177,13 +165,15 @@ messaging:
         size: "1Gi"
       logs:
         size: "512Mi"
+    env:
+      KAFKA_HEAP_OPTS: "-Xmx128M -Xms128M"
     resources:
       requests:
-        memory: "64Mi"
+        memory: "128Mi"
         cpu: "50m"
       limits:
-        memory: "128Mi"
-        cpu: "100m"
+        memory: "256Mi"
+        cpu: "200m"
 
   kafka:
     enabled: true
@@ -192,15 +182,20 @@ messaging:
       tag: "7.5.0"
     storage:
       size: "2Gi"
+    env:
+      KAFKA_HEAP_OPTS: "-Xmx256M -Xms256M"
     resources:
       requests:
-        memory: "128Mi"
+        memory: "300Mi"
         cpu: "100m"
       limits:
-        memory: "256Mi"
-        cpu: "200m"
+        memory: "600Mi" # Kafka needs headroom or it will crash violently
+        cpu: "500m"
+    healthCheck:
+      liveness:
+        initialDelaySeconds: 120
+        periodSeconds: 30
 
-# Authentication - Minimal resources
 auth:
   keycloak:
     enabled: true
@@ -209,27 +204,26 @@ auth:
       tag: "23.0"
     replicas: 1
     port: 8080
+    command: ["start-dev"]
     resources:
       requests:
-        memory: "128Mi"
-        cpu: "100m"
-      limits:
         memory: "256Mi"
         cpu: "200m"
+      limits:
+        memory: "600Mi" # Keycloak is heavy
+        cpu: "500m"
+    extraEnvVars:
+      - name: JAVA_OPTS_APPEND
+        value: "-XX:+UseSerialGC -Xms256m -Xmx400m -Djava.net.preferIPv4Stack=true"
     healthCheck:
       liveness:
-        initialDelaySeconds: 120
+        initialDelaySeconds: 180
         periodSeconds: 30
-        timeoutSeconds: 10
-      readiness:
-        initialDelaySeconds: 90
-        periodSeconds: 10
-        timeoutSeconds: 5
 
-# Monitoring - Disabled by default for free tier
+# Disable Prometheus for now to save ~100-200Mi RAM
 monitoring:
   prometheus:
-    enabled: true
+    enabled: false
     image:
       repository: prom/prometheus
       tag: latest
@@ -242,34 +236,3 @@ monitoring:
       limits:
         memory: "128Mi"
         cpu: "100m"
-
-# Ingress - Disabled by default
-ingress:
-  enabled: false
-  className: "nginx"
-  annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/rewrite-target: "/"
-  hosts:
-    - host: api.dockey.example.com
-      paths:
-        - path: /comments
-          service: comments-service
-          port: 8082
-        - path: /docs
-          service: docs-service
-          port: 8080
-        - path: /users
-          service: user-service
-          port: 8081
-        - path: /auth
-          service: keycloak
-          port: 8080
-        - path: /metrics
-          service: prometheus
-          port: 9090
-  tls:
-    - secretName: dockey-tls
-      hosts:
-        - api.dockey.example.com
