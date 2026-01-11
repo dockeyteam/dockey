@@ -1,7 +1,0 @@
-com\dockey\docs\services\DocumentService.class
-com\dockey\docs\api\DocumentResource.class
-com\dockey\docs\health\DatabaseHealthCheck.class
-com\dockey\docs\DocsApplication.class
-com\dockey\docs\entities\Document.class
-META-INF\services\javax.ws.rs.core.Application
-com\dockey\docs\health\ServiceHealthCheck.class

@@ -1,7 +1,10 @@
 package com.dockey.docs.api;
 
+import com.dockey.docs.dto.DocumentResponse;
 import com.dockey.docs.entities.Document;
 import com.dockey.docs.services.DocumentService;
+import com.dockey.docs.services.DocumentLineCommentService;
+import com.dockey.docs.services.KafkaCommentConsumer;
 import com.kumuluz.ee.logs.LogManager;
 import com.kumuluz.ee.logs.Logger;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -18,6 +21,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
+import java.util.Map;
 
 @RequestScoped
 @Path("/documents")
@@ -30,6 +34,13 @@ public class DocumentResource {
     
     @Inject
     private DocumentService documentService;
+    
+    @Inject
+    private DocumentLineCommentService documentLineCommentService;
+    
+    // Injecting to ensure Kafka consumer starts at application startup
+    @Inject
+    private KafkaCommentConsumer kafkaCommentConsumer;
     
     @GET
     @Operation(summary = "Get all documents", description = "Retrieve a list of all documents")
@@ -48,12 +59,12 @@ public class DocumentResource {
     
     @GET
     @Path("/{id}")
-    @Operation(summary = "Get document by ID", description = "Retrieve a specific document by its ID")
+    @Operation(summary = "Get document by ID", description = "Retrieve a specific document by its ID with line comment counts")
     @APIResponses({
         @APIResponse(
             responseCode = "200",
             description = "Document retrieved successfully",
-            content = @Content(schema = @Schema(implementation = Document.class))
+            content = @Content(schema = @Schema(implementation = DocumentResponse.class))
         ),
         @APIResponse(responseCode = "404", description = "Document not found")
     })
@@ -65,7 +76,10 @@ public class DocumentResource {
         Document document = documentService.getDocument(id);
         
         if (document != null) {
-            return Response.ok(document).build();
+            // Fetch line comment counts
+            Map<Integer, Integer> lineCommentCounts = documentLineCommentService.getLineCommentCountsMap(id);
+            DocumentResponse response = new DocumentResponse(document, lineCommentCounts);
+            return Response.ok(response).build();
         }
         
         return Response.status(Response.Status.NOT_FOUND)
@@ -164,5 +178,36 @@ public class DocumentResource {
         return Response.status(Response.Status.NOT_FOUND)
             .entity("{\"error\": \"Document not found\"}")
             .build();
+    }
+    
+    @GET
+    @Path("/{id}/line-comments")
+    @Operation(summary = "Get line comment counts", description = "Get comment counts per line for a document")
+    @APIResponses({
+        @APIResponse(
+            responseCode = "200",
+            description = "Line comment counts retrieved successfully"
+        ),
+        @APIResponse(responseCode = "404", description = "Document not found")
+    })
+    public Response getLineCommentCounts(
+        @Parameter(description = "Document ID", required = true)
+        @PathParam("id") Long id
+    ) {
+        LOG.info("GET request for line comment counts for document: {}", id);
+        
+        // Check if document exists
+        Document document = documentService.getDocument(id);
+        if (document == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                .entity("{\"error\": \"Document not found\"}")
+                .build();
+        }
+        
+        Map<Integer, Integer> lineCommentCounts = documentLineCommentService.getLineCommentCountsMap(id);
+        return Response.ok(Map.of(
+            "documentId", id,
+            "lineCommentCounts", lineCommentCounts
+        )).build();
     }
 }

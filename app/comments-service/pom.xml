@@ -4,12 +4,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.dockey</groupId>
-    <artifactId>docs-service</artifactId>
+    <artifactId>comments-service</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
-    <name>docs-service</name>
-    <description>Sample Kumuluz Project</description>
+    <name>comments-service</name>
+    <description>Dockey Comments Service with MongoDB and Kafka Producer</description>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -20,10 +20,11 @@
         <kumuluzee-logs.version>1.4.6</kumuluzee-logs.version>
         <kumuluzee-rest.version>1.5.1</kumuluzee-rest.version>
         <kumuluzee-cors.version>1.0.6</kumuluzee-cors.version>
-        <kumuluzee-openapi.version>1.0.1</kumuluzee-openapi.version>
         <kumuluzee-health.version>2.4.3</kumuluzee-health.version>
         <kumuluzee-metrics.version>3.0.0</kumuluzee-metrics.version>
-        <postgresql.version>42.7.1</postgresql.version>
+        <mongodb.version>4.11.1</mongodb.version>
+        <kafka.version>3.6.1</kafka.version>
+        <jackson.version>2.15.3</jackson.version>
     </properties>
 
     <dependencyManagement>
@@ -39,6 +40,7 @@
     </dependencyManagement>
 
     <dependencies>
+        <!-- KumuluzEE Core -->
         <dependency>
             <groupId>com.kumuluz.ee</groupId>
             <artifactId>kumuluzee-core</artifactId>
@@ -57,68 +59,79 @@
         </dependency>
         <dependency>
             <groupId>com.kumuluz.ee</groupId>
-            <artifactId>kumuluzee-jpa-hibernate</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.kumuluz.ee</groupId>
             <artifactId>kumuluzee-bean-validation-hibernate-validator</artifactId>
         </dependency>
         <dependency>
             <groupId>com.kumuluz.ee</groupId>
             <artifactId>kumuluzee-el-uel</artifactId>
         </dependency>
+
+        <!-- MongoDB Driver -->
         <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>${postgresql.version}</version>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver-sync</artifactId>
+            <version>${mongodb.version}</version>
         </dependency>
+
+        <!-- Kafka Client -->
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>${kafka.version}</version>
+        </dependency>
+
+        <!-- Jackson for JSON -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+
+        <!-- JSON-P (javax.json) -->
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.json</artifactId>
+            <version>1.1.4</version>
+        </dependency>
+
+        <!-- Logging -->
         <dependency>
             <groupId>com.kumuluz.ee.logs</groupId>
             <artifactId>kumuluzee-logs-log4j2</artifactId>
             <version>${kumuluzee-logs.version}</version>
         </dependency>
+
+        <!-- REST -->
         <dependency>
             <groupId>com.kumuluz.ee.rest</groupId>
             <artifactId>kumuluzee-rest-core</artifactId>
             <version>${kumuluzee-rest.version}</version>
         </dependency>
+
+        <!-- CORS -->
         <dependency>
             <groupId>com.kumuluz.ee.cors</groupId>
             <artifactId>kumuluzee-cors</artifactId>
             <version>${kumuluzee-cors.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.kumuluz.ee</groupId>
-            <artifactId>kumuluzee-microProfile-3.3</artifactId>
-        </dependency>
+
+        <!-- Health -->
         <dependency>
             <groupId>com.kumuluz.ee.health</groupId>
             <artifactId>kumuluzee-health</artifactId>
             <version>${kumuluzee-health.version}</version>
         </dependency>
+
+        <!-- Metrics -->
         <dependency>
             <groupId>com.kumuluz.ee.metrics</groupId>
             <artifactId>kumuluzee-metrics-core</artifactId>
             <version>${kumuluzee-metrics.version}</version>
-        </dependency>
-        
-        <!-- Kafka Client -->
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-clients</artifactId>
-            <version>3.6.1</version>
-        </dependency>
-        
-        <!-- Jackson for JSON -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.15.3</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>2.15.3</version>
         </dependency>
     </dependencies>
 
@@ -137,22 +150,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.jboss.jandex</groupId>
-                <artifactId>jandex-maven-plugin</artifactId>
-                <version>1.2.3</version>
-                <executions>
-                    <execution>
-                        <id>make-index</id>
-                        <goals>
-                            <goal>jandex</goal>
-                        </goals>
-                        <phase>process-classes</phase>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
-
 
 </project>

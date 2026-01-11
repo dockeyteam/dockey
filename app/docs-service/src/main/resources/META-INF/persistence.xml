@@ -9,6 +9,7 @@
         <non-jta-data-source>jdbc/DocsDS</non-jta-data-source>
         
         <class>com.dockey.docs.entities.Document</class>
+        <class>com.dockey.docs.entities.DocumentLineComment</class>
         
         <properties>
             <property name="javax.persistence.schema-generation.database.action" value="drop-and-create"/>

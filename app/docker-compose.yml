@@ -98,6 +98,78 @@ services:
       - dockey-network
     restart: unless-stopped
 
+  # MongoDB for comments-service
+  commentsdb:
+    image: mongo:7.0
+    container_name: dockey-commentsdb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+      MONGO_INITDB_DATABASE: commentsdb
+    ports:
+      - "27017:27017"
+    volumes:
+      - commentsdb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dockey-network
+
+  # Zookeeper for Kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: dockey-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_logs:/var/lib/zookeeper/log
+    healthcheck:
+      test: ["CMD-SHELL", "echo srvr | nc localhost 2181 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - dockey-network
+
+  # Kafka
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: dockey-kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - dockey-network
+
   # Docs Service
   docs-service:
     build:
@@ -111,8 +183,13 @@ services:
       KUMULUZEE_DATASOURCES0_CONNECTIONURL: jdbc:postgresql://docsdb:5432/docsdb
       KUMULUZEE_DATASOURCES0_USERNAME: postgres
       KUMULUZEE_DATASOURCES0_PASSWORD: postgres
+      # Kafka configuration
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      KAFKA_CONSUMER_GROUP_ID: docs-service-group
     depends_on:
       docsdb:
+        condition: service_healthy
+      kafka:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
@@ -143,13 +220,52 @@ services:
       # MicroProfile JWT configuration - disable issuer check for dev
       # MP_JWT_VERIFY_PUBLICKEY_LOCATION: http://keycloak:8080/realms/dockey/protocol/openid-connect/certs
       # MP_JWT_VERIFY_ISSUER: none
+      # Kafka configuration
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      KAFKA_CONSUMER_GROUP_ID: user-service-group
     depends_on:
       usersdb:
         condition: service_healthy
       keycloak:
         condition: service_healthy
+      kafka:
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8081/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - dockey-network
+    restart: unless-stopped
+
+  # Comments Service (Producer)
+  comments-service:
+    build:
+      context: ./comments-service
+      dockerfile: Dockerfile
+    container_name: dockey-comments-service
+    ports:
+      - "8082:8082"
+    environment:
+      # MongoDB connection
+      MONGODB_CONNECTION_STRING: mongodb://admin:admin@commentsdb:27017/commentsdb?authSource=admin
+      MONGODB_DATABASE: commentsdb
+      # Kafka configuration
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      # Keycloak configuration
+      KEYCLOAK_AUTHSERVERURL: http://keycloak:8080
+      KEYCLOAK_REALM: dockey
+    depends_on:
+      commentsdb:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8082/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -170,3 +286,11 @@ volumes:
     name: dockey-usersdb-data
   keycloakdb_data:
     name: dockey-keycloakdb-data
+  commentsdb_data:
+    name: dockey-commentsdb-data
+  zookeeper_data:
+    name: dockey-zookeeper-data
+  zookeeper_logs:
+    name: dockey-zookeeper-logs
+  kafka_data:
+    name: dockey-kafka-data

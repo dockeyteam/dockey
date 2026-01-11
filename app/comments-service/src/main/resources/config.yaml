@@ -1,0 +1,40 @@
+kumuluzee:
+  name: comments-service
+  version: 1.0.0
+  env:
+    name: dev
+  
+  server:
+    http:
+      port: 8082
+    base-url: http://localhost:8082
+  
+  logs:
+    config-file: '<?xml version="1.0" encoding="UTF-8"?>
+                  <Configuration name="comments-service">
+                      <Appenders>
+                          <Console name="console" target="SYSTEM_OUT">
+                              <PatternLayout pattern="%d %p %marker %m %X %ex %n"/>
+                          </Console>
+                      </Appenders>
+                      <Loggers>
+                          <Root level="info">
+                              <AppenderRef ref="console"/>
+                          </Root>
+                      </Loggers>
+                  </Configuration>'
+  
+  health:
+    servlet:
+      mapping: /health
+      enabled: true
+    logs:
+      enabled: true
+      level: FINE
+  
+  cors-filter:
+    servlet:
+      enabled: true
+      allow-origin: "*"
+      allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+      allow-headers: "*"
