@@ -50,6 +50,9 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+      - name: Login to ACR
+        run: az acr login --name dockey
+
       - name: Build and push comments-service
         uses: docker/build-push-action@v5
         with:
