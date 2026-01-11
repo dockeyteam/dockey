@@ -1,0 +1,15 @@
+apiVersion: v2
+name: dockey
+description: A Helm chart for Dockey application
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - microservices
+  - document-management
+  - java
+maintainers:
+  - name: Dockey Team
+home: https://github.com/dockeyteam/dockey
+sources:
+  - https://github.com/dockeyteam/dockey

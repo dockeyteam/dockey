@@ -50,3 +50,24 @@ docker-compose up -d
 ## Services
 
 Each service is located in its own directory with independent configuration and deployment options. Refer to individual service documentation for detailed API specifications and usage examples.
+
+## Deployment
+
+### Local Development
+Use Docker Compose for local development and testing (see above).
+
+### Production Deployment to Azure Kubernetes Service (AKS)
+
+For deploying to Azure Kubernetes Service, see the deployment guides in the repository root:
+
+- **[DEPLOYMENT.md](../DEPLOYMENT.md)** - Comprehensive deployment guide with step-by-step instructions
+- **[QUICK_START.md](../QUICK_START.md)** - Quick reference for common deployment tasks
+- **[k8s/](../k8s/)** - Kubernetes manifests for all services and infrastructure
+
+The deployment includes:
+- CI/CD pipelines (GitHub Actions and Azure DevOps)
+- Kubernetes manifests for all services
+- Database deployments (PostgreSQL, MongoDB)
+- Messaging infrastructure (Kafka, Zookeeper)
+- Authentication (Keycloak)
+- Monitoring (Prometheus)

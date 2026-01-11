@@ -1,0 +1,90 @@
+{{- if .Values.databases.postgres.docs.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-docs
+  namespace: {{ include "dockey.namespace" . }}
+  labels:
+    app: postgres-docs
+    {{- include "dockey.labels" . | nindent 4 }}
+spec:
+  serviceName: postgres-docs
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-docs
+  template:
+    metadata:
+      labels:
+        app: postgres-docs
+        {{- include "dockey.labels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: postgres
+        image: "{{ .Values.databases.postgres.docs.image.repository }}:{{ .Values.databases.postgres.docs.image.tag }}"
+        ports:
+        - containerPort: 5432
+          name: postgres
+        env:
+        - name: POSTGRES_DB
+          value: {{ .Values.databases.postgres.docs.database | quote }}
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-docs-secret
+              key: username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-docs-secret
+              key: password
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        resources:
+          {{- toYaml .Values.databases.postgres.docs.resources | nindent 10 }}
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -U postgres -d {{ .Values.databases.postgres.docs.database }}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -U postgres -d {{ .Values.databases.postgres.docs.database }}
+          initialDelaySeconds: 5
+          periodSeconds: 5
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-storage
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: {{ include "dockey.storageClass" . }}
+      resources:
+        requests:
+          storage: {{ .Values.databases.postgres.docs.storage.size }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-docs
+  namespace: {{ include "dockey.namespace" . }}
+  labels:
+    app: postgres-docs
+    {{- include "dockey.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5432
+    targetPort: 5432
+    protocol: TCP
+  selector:
+    app: postgres-docs
+{{- end }}
