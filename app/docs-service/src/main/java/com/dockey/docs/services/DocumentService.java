@@ -23,6 +23,13 @@ public class DocumentService {
         TypedQuery<Document> query = em.createNamedQuery("Document.findAll", Document.class);
         return query.getResultList();
     }
+
+    public List<Object> getAllDocumentsByGroup(String group) {
+        LOG.info("Fetching all documents in group: {}");
+        TypedQuery<Object> query = em.createNamedQuery("Document.findGroup", Object.class);
+        query.setParameter("group", group);
+        return query.getResultList();
+    }
     
     public Document getDocument(Long id) {
         LOG.info("Fetching document with id: {}", id);

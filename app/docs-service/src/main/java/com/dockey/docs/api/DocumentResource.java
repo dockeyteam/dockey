@@ -56,6 +56,25 @@ public class DocumentResource {
         List<Document> documents = documentService.getAllDocuments();
         return Response.ok(documents).build();
     }
+
+    @GET
+    @Path("/group/{group}")
+    @Operation(summary = "Get all documents from a group", description = "Retrieve a list of all documents belonging to a specific group")
+    @APIResponses({
+            @APIResponse(
+                    responseCode = "200",
+                    description = "Group of documents retrieved successfully",
+                    content = @Content(schema = @Schema(implementation = Object.class))
+            )
+    })
+    public Response getAllDocumentsByGroup(
+            @Parameter(description = "Document group name", required = true)
+            @PathParam("group") String group
+    ) {
+        LOG.info("GET request for all documents in a certain group");
+        List<Object> documents = documentService.getAllDocumentsByGroup(group);
+        return Response.ok(documents).build();
+    }
     
     @GET
     @Path("/{id}")

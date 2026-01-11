@@ -7,7 +7,9 @@ import java.util.Map;
 
 public class DocumentResponse {
     private Long id;
+    private String group;
     private String title;
+    private String source;
     private String content;
     private Long userId;
     private Instant createdAt;
@@ -20,7 +22,9 @@ public class DocumentResponse {
 
     public DocumentResponse(Document document, Map<Integer, Integer> lineCommentCounts) {
         this.id = document.getId();
+        this.group = document.getTitle();
         this.title = document.getTitle();
+        this.source = document.getTitle();
         this.content = document.getContent();
         this.userId = document.getUserId();
         this.createdAt = document.getCreatedAt();
@@ -38,12 +42,28 @@ public class DocumentResponse {
         this.id = id;
     }
 
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
+
     public String getTitle() {
         return title;
     }
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setource(String source) {
+        this.source = source;
     }
 
     public String getContent() {
