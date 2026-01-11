@@ -90,6 +90,16 @@
         <dependency>
             <groupId>com.kumuluz.ee</groupId>
             <artifactId>kumuluzee-microProfile-3.3</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.microprofile.jwt</groupId>
+                    <artifactId>microprofile-jwt-auth-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.kumuluz.ee.jwt</groupId>
+                    <artifactId>kumuluzee-jwt-auth</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.kumuluz.ee.health</groupId>
