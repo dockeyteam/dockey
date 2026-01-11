@@ -1,0 +1,275 @@
+# Free Tier Optimized Values
+# This values file is optimized for AKS free tier clusters with limited resources
+# Use with: helm install dockey ./helm/dockey -n dockey -f helm/dockey/values-free-tier.yaml
+
+global:
+  namespace: dockey
+  imageRegistry: dockey.azurecr.io
+  imagePullPolicy: Always
+  storageClass: managed-csi
+
+# Application Services - Minimal resources
+services:
+  comments:
+    enabled: true
+    image:
+      repository: comments-service
+      tag: latest
+    replicas: 1
+    port: 8082
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+    env:
+      mongodbDatabase: "commentsdb"
+      kafkaBootstrapServers: "kafka:9092"
+      keycloakAuthServerUrl: "http://keycloak:8080"
+      keycloakRealm: "dockey"
+    healthCheck:
+      liveness:
+        initialDelaySeconds: 90
+        periodSeconds: 30
+        timeoutSeconds: 5
+      readiness:
+        initialDelaySeconds: 60
+        periodSeconds: 10
+        timeoutSeconds: 5
+
+  docs:
+    enabled: true
+    image:
+      repository: docs-service
+      tag: latest
+    replicas: 1
+    port: 8080
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+    env:
+      databaseName: "docsdb"
+      kafkaBootstrapServers: "kafka:9092"
+      kafkaConsumerGroupId: "docs-service-group"
+    healthCheck:
+      liveness:
+        initialDelaySeconds: 90
+        periodSeconds: 30
+        timeoutSeconds: 5
+      readiness:
+        initialDelaySeconds: 60
+        periodSeconds: 10
+        timeoutSeconds: 5
+
+  user:
+    enabled: true
+    image:
+      repository: user-service
+      tag: latest
+    replicas: 1
+    port: 8081
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+    env:
+      databaseName: "usersdb"
+      keycloakAuthServerUrl: "http://keycloak:8080"
+      keycloakRealm: "dockey"
+      kafkaBootstrapServers: "kafka:9092"
+      kafkaConsumerGroupId: "user-service-group"
+    healthCheck:
+      liveness:
+        initialDelaySeconds: 90
+        periodSeconds: 30
+        timeoutSeconds: 5
+      readiness:
+        initialDelaySeconds: 60
+        periodSeconds: 10
+        timeoutSeconds: 5
+
+# Databases - Minimal resources
+databases:
+  postgres:
+    docs:
+      enabled: true
+      image:
+        repository: postgres
+        tag: "15-alpine"
+      database: "docsdb"
+      storage:
+        size: "2Gi"
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "50m"
+        limits:
+          memory: "128Mi"
+          cpu: "100m"
+
+    users:
+      enabled: true
+      image:
+        repository: postgres
+        tag: "15-alpine"
+      database: "usersdb"
+      storage:
+        size: "2Gi"
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "50m"
+        limits:
+          memory: "128Mi"
+          cpu: "100m"
+
+    keycloak:
+      enabled: true
+      image:
+        repository: postgres
+        tag: "15-alpine"
+      database: "keycloak"
+      storage:
+        size: "2Gi"
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "50m"
+        limits:
+          memory: "128Mi"
+          cpu: "100m"
+
+  mongodb:
+    comments:
+      enabled: true
+      image:
+        repository: mongo
+        tag: "7.0"
+      database: "commentsdb"
+      storage:
+        size: "2Gi"
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "50m"
+        limits:
+          memory: "128Mi"
+          cpu: "100m"
+
+# Messaging - Minimal resources
+messaging:
+  zookeeper:
+    enabled: true
+    image:
+      repository: confluentinc/cp-zookeeper
+      tag: "7.5.0"
+    storage:
+      data:
+        size: "1Gi"
+      logs:
+        size: "512Mi"
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+
+  kafka:
+    enabled: true
+    image:
+      repository: confluentinc/cp-kafka
+      tag: "7.5.0"
+    storage:
+      size: "2Gi"
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+
+# Authentication - Minimal resources
+auth:
+  keycloak:
+    enabled: true
+    image:
+      repository: quay.io/keycloak/keycloak
+      tag: "23.0"
+    replicas: 1
+    port: 8080
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+    healthCheck:
+      liveness:
+        initialDelaySeconds: 120
+        periodSeconds: 30
+        timeoutSeconds: 10
+      readiness:
+        initialDelaySeconds: 90
+        periodSeconds: 10
+        timeoutSeconds: 5
+
+# Monitoring - Disabled by default for free tier
+monitoring:
+  prometheus:
+    enabled: true
+    image:
+      repository: prom/prometheus
+      tag: latest
+    storage:
+      size: "2Gi"
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+
+# Ingress - Disabled by default
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: "/"
+  hosts:
+    - host: api.dockey.example.com
+      paths:
+        - path: /comments
+          service: comments-service
+          port: 8082
+        - path: /docs
+          service: docs-service
+          port: 8080
+        - path: /users
+          service: user-service
+          port: 8081
+        - path: /auth
+          service: keycloak
+          port: 8080
+        - path: /metrics
+          service: prometheus
+          port: 9090
+  tls:
+    - secretName: dockey-tls
+      hosts:
+        - api.dockey.example.com

@@ -1,0 +1,91 @@
+{{- if .Values.databases.mongodb.comments.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongodb-comments
+  namespace: {{ include "dockey.namespace" . }}
+  labels:
+    app: mongodb-comments
+    {{- include "dockey.labels" . | nindent 4 }}
+spec:
+  serviceName: mongodb-comments
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb-comments
+  template:
+    metadata:
+      labels:
+        app: mongodb-comments
+        {{- include "dockey.labels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: mongodb
+        image: "{{ .Values.databases.mongodb.comments.image.repository }}:{{ .Values.databases.mongodb.comments.image.tag }}"
+        ports:
+        - containerPort: 27017
+          name: mongodb
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-comments-secret
+              key: username
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-comments-secret
+              key: password
+        - name: MONGO_INITDB_DATABASE
+          value: {{ .Values.databases.mongodb.comments.database | quote }}
+        volumeMounts:
+        - name: mongodb-storage
+          mountPath: /data/db
+        command:
+        - mongod
+        - --bind_ip_all
+        resources:
+          {{- toYaml .Values.databases.mongodb.comments.resources | nindent 10 }}
+        livenessProbe:
+          exec:
+            command:
+            - mongosh
+            - --eval
+            - db.adminCommand('ping')
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - mongosh
+            - --eval
+            - db.adminCommand('ping')
+          initialDelaySeconds: 5
+          periodSeconds: 5
+  volumeClaimTemplates:
+  - metadata:
+      name: mongodb-storage
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: {{ include "dockey.storageClass" . }}
+      resources:
+        requests:
+          storage: {{ .Values.databases.mongodb.comments.storage.size }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-comments
+  namespace: {{ include "dockey.namespace" . }}
+  labels:
+    app: mongodb-comments
+    {{- include "dockey.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+  - port: 27017
+    targetPort: 27017
+    protocol: TCP
+  selector:
+    app: mongodb-comments
+{{- end }}

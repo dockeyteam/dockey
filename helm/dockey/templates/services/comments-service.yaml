@@ -1,0 +1,74 @@
+{{- if .Values.services.comments.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: comments-service
+  namespace: {{ include "dockey.namespace" . }}
+  labels:
+    app: comments-service
+    {{- include "dockey.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.services.comments.replicas }}
+  selector:
+    matchLabels:
+      app: comments-service
+  template:
+    metadata:
+      labels:
+        app: comments-service
+        {{- include "dockey.labels" . | nindent 8 }}
+    spec:
+      imagePullSecrets:
+      - name: acr-secret
+      containers:
+      - name: comments-service
+        image: "{{ include "dockey.imageRegistry" . }}/{{ .Values.services.comments.image.repository }}:{{ .Values.services.comments.image.tag }}"
+        imagePullPolicy: {{ include "dockey.imagePullPolicy" . }}
+        ports:
+        - containerPort: {{ .Values.services.comments.port }}
+          name: http
+        env:
+        - name: MONGODB_CONNECTION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-comments-secret
+              key: connection-string
+        - name: MONGODB_DATABASE
+          value: {{ .Values.services.comments.env.mongodbDatabase | quote }}
+        - name: KAFKA_BOOTSTRAP_SERVERS
+          value: {{ .Values.services.comments.env.kafkaBootstrapServers | quote }}
+        - name: KEYCLOAK_AUTHSERVERURL
+          value: {{ .Values.services.comments.env.keycloakAuthServerUrl | quote }}
+        - name: KEYCLOAK_REALM
+          value: {{ .Values.services.comments.env.keycloakRealm | quote }}
+        resources:
+          {{- toYaml .Values.services.comments.resources | nindent 10 }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.services.comments.port }}
+          {{- toYaml .Values.services.comments.healthCheck.liveness | nindent 10 }}
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.services.comments.port }}
+          {{- toYaml .Values.services.comments.healthCheck.readiness | nindent 10 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: comments-service
+  namespace: {{ include "dockey.namespace" . }}
+  labels:
+    app: comments-service
+    {{- include "dockey.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+  - port: {{ .Values.services.comments.port }}
+    targetPort: {{ .Values.services.comments.port }}
+    protocol: TCP
+    name: http
+  selector:
+    app: comments-service
+{{- end }}

@@ -1,0 +1,151 @@
+name: Build and Deploy to AKS
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'app/**'
+      - '.github/workflows/deploy-aks.yml'
+  pull_request:
+    branches:
+      - main
+      - master
+  release:
+    types: [created]
+
+env:
+  ACR_NAME: dockey
+  AKS_RESOURCE_GROUP: FRItest
+  AKS_CLUSTER_NAME: dockey1
+  REGISTRY: dockey.azurecr.io
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Azure Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.AZURE_CLIENT_ID }}
+          password: ${{ secrets.AZURE_CLIENT_SECRET }}
+
+      - name: Build and push comments-service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app/comments-service
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/comments-service:${{ env.IMAGE_TAG }}
+            ${{ env.REGISTRY }}/comments-service:latest
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/comments-service:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/comments-service:buildcache,mode=max
+
+      - name: Build and push docs-service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app/docs-service
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/docs-service:${{ env.IMAGE_TAG }}
+            ${{ env.REGISTRY }}/docs-service:latest
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/docs-service:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/docs-service:buildcache,mode=max
+
+      - name: Build and push user-service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app/user-service
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/user-service:${{ env.IMAGE_TAG }}
+            ${{ env.REGISTRY }}/user-service:latest
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/user-service:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/user-service:buildcache,mode=max
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: '3.12.0'
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: '1.32.7'
+
+      - name: Get AKS credentials
+        run: |
+          az aks get-credentials \
+            --resource-group ${{ env.AKS_RESOURCE_GROUP }} \
+            --name ${{ env.AKS_CLUSTER_NAME }} \
+            --overwrite-existing
+
+      - name: Create namespace
+        run: |
+          kubectl create namespace dockey --dry-run=client -o yaml | kubectl apply -f - || true
+
+      - name: Deploy to AKS with Helm
+        run: |
+          # Check if release exists
+          if helm list -n dockey | grep -q dockey; then
+            echo "Upgrading existing release..."
+            helm upgrade dockey ./helm/dockey \
+              -n dockey \
+              --create-namespace \
+              --set services.comments.image.tag=${{ env.IMAGE_TAG }} \
+              --set services.docs.image.tag=${{ env.IMAGE_TAG }} \
+              --set services.user.image.tag=${{ env.IMAGE_TAG }} \
+              --wait \
+              --timeout 10m
+          else
+            echo "Installing new release..."
+            helm install dockey ./helm/dockey \
+              -n dockey \
+              --create-namespace \
+              --set services.comments.image.tag=${{ env.IMAGE_TAG }} \
+              --set services.docs.image.tag=${{ env.IMAGE_TAG }} \
+              --set services.user.image.tag=${{ env.IMAGE_TAG }} \
+              --wait \
+              --timeout 10m
+          fi
+
+      - name: Verify deployment
+        run: |
+          helm status dockey -n dockey
+          kubectl get pods -n dockey
+          kubectl get svc -n dockey

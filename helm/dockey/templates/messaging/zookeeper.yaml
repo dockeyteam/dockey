@@ -1,0 +1,90 @@
+{{- if .Values.messaging.zookeeper.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: zookeeper
+  namespace: {{ include "dockey.namespace" . }}
+  labels:
+    app: zookeeper
+    {{- include "dockey.labels" . | nindent 4 }}
+spec:
+  serviceName: zookeeper
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zookeeper
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+        {{- include "dockey.labels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: zookeeper
+        image: "{{ .Values.messaging.zookeeper.image.repository }}:{{ .Values.messaging.zookeeper.image.tag }}"
+        ports:
+        - containerPort: 2181
+          name: client
+        env:
+        - name: ZOOKEEPER_CLIENT_PORT
+          value: "2181"
+        - name: ZOOKEEPER_TICK_TIME
+          value: "2000"
+        volumeMounts:
+        - name: zookeeper-data
+          mountPath: /var/lib/zookeeper/data
+        - name: zookeeper-logs
+          mountPath: /var/lib/zookeeper/log
+        resources:
+          {{- toYaml .Values.messaging.zookeeper.resources | nindent 10 }}
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "echo srvr | nc localhost 2181 || exit 1"
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "echo srvr | nc localhost 2181 || exit 1"
+          initialDelaySeconds: 10
+          periodSeconds: 5
+  volumeClaimTemplates:
+  - metadata:
+      name: zookeeper-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: {{ include "dockey.storageClass" . }}
+      resources:
+        requests:
+          storage: {{ .Values.messaging.zookeeper.storage.data.size }}
+  - metadata:
+      name: zookeeper-logs
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: {{ include "dockey.storageClass" . }}
+      resources:
+        requests:
+          storage: {{ .Values.messaging.zookeeper.storage.logs.size }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper
+  namespace: {{ include "dockey.namespace" . }}
+  labels:
+    app: zookeeper
+    {{- include "dockey.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+  - port: 2181
+    targetPort: 2181
+    protocol: TCP
+  selector:
+    app: zookeeper
+{{- end }}
