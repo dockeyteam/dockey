@@ -274,6 +274,26 @@ services:
       - dockey-network
     restart: unless-stopped
 
+  # Prometheus
+  prometheus:
+    build:
+      context: ./prometheus
+      dockerfile: Dockerfile
+    container_name: dockey-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - prom_data:/prometheus
+    healthcheck:
+      test: ["CMD", "wget", "http://localhost:9090"]
+      interval: 10s
+      timeout: 15s
+      retries: 10
+      start_period: 40s 
+    networks:
+      - dockey-network
+    restart: unless-stopped
+
 networks:
   dockey-network:
     driver: bridge
@@ -294,3 +314,5 @@ volumes:
     name: dockey-zookeeper-logs
   kafka_data:
     name: dockey-kafka-data
+  prom_data:
+    name: dockey-prom-data
