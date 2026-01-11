@@ -85,6 +85,33 @@ services:
         initialDelaySeconds: 120
         periodSeconds: 20
 
+  frontend:
+    enabled: true
+    image:
+      repository: frontend
+      tag: latest
+    replicas: 2  # Can scale horizontally
+    port: 80
+    resources:
+      requests:
+        memory: "32Mi"  # Nginx is very light
+        cpu: "10m"
+      limits:
+        memory: "64Mi"
+        cpu: "100m"
+    env:
+      # Not used at runtime (baked into build), but documented here
+      VITE_USER_SERVICE_URL: "/api/users"
+      VITE_DOCS_SERVICE_URL: "/api/docs"
+      VITE_COMMENTS_SERVICE_URL: "/api/comments"
+    healthCheck:
+      liveness:
+        initialDelaySeconds: 10
+        periodSeconds: 10
+      readiness:
+        initialDelaySeconds: 5
+        periodSeconds: 5
+
 databases:
   postgres:
     # Kept separate as requested
