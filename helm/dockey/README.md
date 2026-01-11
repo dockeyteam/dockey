@@ -1,229 +1,189 @@
 # Dockey Helm Chart
 
-This Helm chart deploys the Dockey microservices application to Kubernetes.
+A comprehensive Helm chart for deploying the Dockey microservices platform to Kubernetes. This chart manages the complete application stack including microservices, databases, messaging infrastructure, authentication, and monitoring.
 
-## Prerequisites
+## Chart Structure
 
-- Kubernetes 1.19+
-- Helm 3.0+
-- kubectl configured to access your cluster
-- Secrets created (see below)
+The chart is organized into logical components:
 
-## Installation
-
-### 1. Create Secrets
-
-Before installing the chart, create the required secrets:
-
-```bash
-# Set your passwords
-export POSTGRES_PASSWORD="your-strong-password"
-export MONGODB_PASSWORD="your-strong-password"
-export KEYCLOAK_ADMIN_PASSWORD="your-strong-password"
-
-# Create namespace
-kubectl create namespace dockey
-
-# PostgreSQL secrets
-kubectl create secret generic postgres-docs-secret \
-  --from-literal=username=postgres \
-  --from-literal=password=$POSTGRES_PASSWORD \
-  -n dockey
-
-kubectl create secret generic postgres-users-secret \
-  --from-literal=username=postgres \
-  --from-literal=password=$POSTGRES_PASSWORD \
-  -n dockey
-
-kubectl create secret generic postgres-keycloak-secret \
-  --from-literal=username=keycloak \
-  --from-literal=password=$POSTGRES_PASSWORD \
-  -n dockey
-
-# MongoDB secret
-kubectl create secret generic mongodb-comments-secret \
-  --from-literal=username=admin \
-  --from-literal=password=$MONGODB_PASSWORD \
-  --from-literal=connection-string="mongodb://admin:${MONGODB_PASSWORD}@mongodb-comments:27017/commentsdb?authSource=admin" \
-  -n dockey
-
-# Keycloak admin
-kubectl create secret generic keycloak-admin-secret \
-  --from-literal=username=admin \
-  --from-literal=password=$KEYCLOAK_ADMIN_PASSWORD \
-  -n dockey
+```
+helm/dockey/
+├── Chart.yaml              # Chart metadata
+├── values.yaml             # Default configuration values
+├── templates/
+│   ├── _helpers.tpl        # Template helper functions
+│   ├── services/           # Application microservices
+│   │   ├── comments-service.yaml
+│   │   ├── docs-service.yaml
+│   │   └── user-service.yaml
+│   ├── databases/          # Database StatefulSets
+│   │   ├── postgres-docs.yaml
+│   │   ├── postgres-users.yaml
+│   │   ├── postgres-keycloak.yaml
+│   │   └── mongodb-comments.yaml
+│   ├── messaging/          # Kafka infrastructure
+│   │   ├── zookeeper.yaml
+│   │   └── kafka.yaml
+│   ├── auth/               # Authentication service
+│   │   └── keycloak.yaml
+│   └── monitoring/         # Observability
+│       └── prometheus.yaml
+└── README.md
 ```
 
-### 2. Install the Chart
+## Applications
 
-```bash
-# Install with default values
-helm install dockey ./helm/dockey -n dockey
+### Microservices
 
-# Install with free tier optimized values (for limited resources)
-helm install dockey ./helm/dockey -n dockey -f ./helm/dockey/values-free-tier.yaml
+The chart deploys three Java-based microservices built with KumuluzEE:
 
-# Install with custom values file
-helm install dockey ./helm/dockey -n dockey -f my-values.yaml
+#### 1. Comments Service (`comments-service`)
+- **Purpose**: Manages document comments and user interactions
+- **Port**: 8082
+- **Database**: MongoDB (`commentsdb`)
+- **Dependencies**: Kafka, Keycloak
+- **Features**: 
+  - Comment CRUD operations
+  - Like/unlike functionality
+  - Line-level comment tracking
 
-# Install with specific image tags
-helm install dockey ./helm/dockey -n dockey \
-  --set services.comments.image.tag=v1.0.0 \
-  --set services.docs.image.tag=v1.0.0 \
-  --set services.user.image.tag=v1.0.0
-```
+#### 2. Docs Service (`docs-service`)
+- **Purpose**: Document management and processing
+- **Port**: 8080
+- **Database**: PostgreSQL (`docsdb`)
+- **Dependencies**: Kafka (consumer)
+- **Features**:
+  - Document storage and retrieval
+  - Document line comment aggregation
+  - Kafka event consumption
 
-### 3. Upgrade the Chart
+#### 3. User Service (`user-service`)
+- **Purpose**: User authentication and profile management
+- **Port**: 8081
+- **Database**: PostgreSQL (`usersdb`)
+- **Dependencies**: Keycloak, Kafka
+- **Features**:
+  - User registration and authentication
+  - Profile management
+  - GraphQL API support
+  - Token refresh
 
-```bash
-# Upgrade with new values
-helm upgrade dockey ./helm/dockey -n dockey
+### Infrastructure Components
 
-# Upgrade with new image tags
-helm upgrade dockey ./helm/dockey -n dockey \
-  --set services.comments.image.tag=v1.1.0 \
-  --set services.docs.image.tag=v1.1.0 \
-  --set services.user.image.tag=v1.1.0
+#### Databases
+- **PostgreSQL**: Three separate instances for docs, users, and Keycloak
+- **MongoDB**: Document store for comments service
 
-# Upgrade and wait for rollout
-helm upgrade dockey ./helm/dockey -n dockey --wait
-```
+#### Messaging
+- **Zookeeper**: Coordination service for Kafka
+- **Kafka**: Event streaming platform for inter-service communication
 
-### 4. Uninstall the Chart
+#### Authentication
+- **Keycloak**: Identity and access management (IAM) service
 
-```bash
-helm uninstall dockey -n dockey
-```
+#### Monitoring
+- **Prometheus**: Metrics collection and alerting (optional)
 
 ## Configuration
 
-The following table lists the configurable parameters and their default values:
-
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `global.namespace` | Namespace for all resources | `dockey` |
-| `global.imageRegistry` | Container registry | `dockey.azurecr.io` |
-| `global.imagePullPolicy` | Image pull policy | `Always` |
-| `global.storageClass` | Storage class for PVCs | `managed-csi` |
-| `services.comments.enabled` | Enable comments service | `true` |
-| `services.comments.replicas` | Number of replicas | `2` |
-| `services.comments.image.tag` | Image tag | `latest` |
-| `services.docs.enabled` | Enable docs service | `true` |
-| `services.docs.replicas` | Number of replicas | `2` |
-| `services.docs.image.tag` | Image tag | `latest` |
-| `services.user.enabled` | Enable user service | `true` |
-| `services.user.replicas` | Number of replicas | `2` |
-| `services.user.image.tag` | Image tag | `latest` |
-| `databases.postgres.*.enabled` | Enable PostgreSQL databases | `true` |
-| `databases.mongodb.comments.enabled` | Enable MongoDB | `true` |
-| `messaging.zookeeper.enabled` | Enable Zookeeper | `true` |
-| `messaging.kafka.enabled` | Enable Kafka | `true` |
-| `auth.keycloak.enabled` | Enable Keycloak | `true` |
-| `monitoring.prometheus.enabled` | Enable Prometheus | `true` |
-| `ingress.enabled` | Enable Ingress | `false` |
-
-See `values.yaml` for all available options.
-
-## Examples
-
-### Production Deployment
-
-```bash
-helm install dockey ./helm/dockey -n dockey \
-  --set services.comments.replicas=3 \
-  --set services.docs.replicas=3 \
-  --set services.user.replicas=3 \
-  --set services.comments.image.tag=v1.0.0 \
-  --set services.docs.image.tag=v1.0.0 \
-  --set services.user.image.tag=v1.0.0 \
-  --set ingress.enabled=true
-```
-
-### Development Deployment
-
-```bash
-helm install dockey ./helm/dockey -n dockey \
-  --set services.comments.replicas=1 \
-  --set services.docs.replicas=1 \
-  --set services.user.replicas=1 \
-  --set monitoring.prometheus.enabled=false
-```
-
-### Custom Values File
-
-Create `production-values.yaml`:
+### Global Settings
 
 ```yaml
 global:
-  imageRegistry: dockey.azurecr.io
-  storageClass: managed-csi
+  namespace: dockey                    # Target Kubernetes namespace
+  imageRegistry: dockey.azurecr.io      # Container registry
+  imagePullPolicy: Always              # Image pull policy
+  storageClass: managed-csi            # Storage class for PVCs
+  javaOpts: "-XX:+UseSerialGC..."      # JVM options for all Java services
+```
 
+### Service Configuration
+
+Each microservice supports the following configuration:
+
+```yaml
 services:
-  comments:
-    replicas: 3
+  <service-name>:
+    enabled: true                       # Enable/disable service
+    replicas: 1                         # Number of replicas
     image:
-      tag: v1.0.0
-  docs:
-    replicas: 3
-    image:
-      tag: v1.0.0
-  user:
-    replicas: 3
-    image:
-      tag: v1.0.0
-
-ingress:
-  enabled: true
-  hosts:
-    - host: api.dockey.example.com
-      paths:
-        - path: /comments
-          service: comments-service
-          port: 8082
+      repository: <service-name>        # Image repository
+      tag: latest                       # Image tag
+    port: 8080                          # Service port
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "50m"
+      limits:
+        memory: "350Mi"
+        cpu: "500m"
+    env:                                # Environment variables
+      databaseName: "docsdb"
+      kafkaBootstrapServers: "kafka:9092"
+    healthCheck:
+      liveness:
+        initialDelaySeconds: 120
+        periodSeconds: 20
 ```
 
-Then install:
 
-```bash
-helm install dockey ./helm/dockey -n dockey -f production-values.yaml
-```
+## Production Configuration
 
-## Troubleshooting
+For production deployments, use the following recommended settings:
 
-### Check Release Status
 
-```bash
-helm status dockey -n dockey
-```
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `global.namespace` | Kubernetes namespace | `dockey` |
+| `global.imageRegistry` | Container registry | `dockey.azurecr.io` |
+| `global.imagePullPolicy` | Image pull policy | `Always` |
+| `global.storageClass` | Storage class for PVCs | `managed-csi` |
+| `global.javaOpts` | JVM options for Java services | Optimized for low memory |
 
-### View Rendered Templates
+### Service Parameters
 
-```bash
-helm template dockey ./helm/dockey -n dockey
-```
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `services.<name>.enabled` | Enable service | `true` |
+| `services.<name>.replicas` | Number of replicas | `1` |
+| `services.<name>.image.repository` | Image repository | Service name |
+| `services.<name>.image.tag` | Image tag | `latest` |
+| `services.<name>.port` | Service port | Service-specific |
+| `services.<name>.resources` | Resource requests/limits | See values.yaml |
+| `services.<name>.env` | Environment variables | Service-specific |
 
-### Debug Installation
+### Database Parameters
 
-```bash
-helm install dockey ./helm/dockey -n dockey --debug --dry-run
-```
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `databases.postgres.<name>.enabled` | Enable PostgreSQL instance | `true` |
+| `databases.postgres.<name>.image.repository` | PostgreSQL image | `postgres` |
+| `databases.postgres.<name>.image.tag` | PostgreSQL version | `15-alpine` |
+| `databases.postgres.<name>.database` | Database name | Instance-specific |
+| `databases.postgres.<name>.storage.size` | Storage size | `2Gi` |
+| `databases.mongodb.comments.enabled` | Enable MongoDB | `true` |
+| `databases.mongodb.comments.storage.size` | MongoDB storage | `2Gi` |
 
-### View Release History
+### Messaging Parameters
 
-```bash
-helm history dockey -n dockey
-```
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `messaging.zookeeper.enabled` | Enable Zookeeper | `true` |
+| `messaging.zookeeper.storage.data.size` | Zookeeper data storage | `1Gi` |
+| `messaging.kafka.enabled` | Enable Kafka | `true` |
+| `messaging.kafka.storage.size` | Kafka storage | `2Gi` |
 
-### Rollback
+### Authentication Parameters
 
-```bash
-helm rollback dockey <revision-number> -n dockey
-```
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `auth.keycloak.enabled` | Enable Keycloak | `true` |
+| `auth.keycloak.replicas` | Keycloak replicas | `1` |
+| `auth.keycloak.image.tag` | Keycloak version | `23.0` |
 
-## Notes
+### Monitoring Parameters
 
-- Secrets must be created before installation
-- The chart creates a namespace if it doesn't exist
-- All resources are deployed to the namespace specified in `global.namespace`
-- Image tags should be updated for each deployment
-- Use `--wait` flag to wait for all resources to be ready
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `monitoring.prometheus.enabled` | Enable Prometheus | `false` |
+| `monitoring.prometheus.storage.size` | Prometheus storage | `2Gi` |

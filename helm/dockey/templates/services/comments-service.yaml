@@ -47,12 +47,19 @@ spec:
           httpGet:
             path: /health
             port: {{ .Values.services.comments.port }}
+          {{- if .Values.services.comments.healthCheck.liveness }}
           {{- toYaml .Values.services.comments.healthCheck.liveness | nindent 10 }}
+          {{- end }}
         readinessProbe:
           httpGet:
             path: /health
             port: {{ .Values.services.comments.port }}
+          {{- if .Values.services.comments.healthCheck.readiness }}
           {{- toYaml .Values.services.comments.healthCheck.readiness | nindent 10 }}
+          {{- else }}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          {{- end }}
 ---
 apiVersion: v1
 kind: Service

@@ -1,4 +1,3 @@
-# Stability-Focused Values (No Architectural Changes)
 # Usage: helm upgrade --install dockey ./helm/dockey -n dockey -f values.yaml
 
 global:

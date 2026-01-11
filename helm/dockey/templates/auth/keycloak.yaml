@@ -69,12 +69,19 @@ spec:
           httpGet:
             path: /health/ready
             port: {{ .Values.auth.keycloak.port }}
+          {{- if .Values.auth.keycloak.healthCheck.liveness }}
           {{- toYaml .Values.auth.keycloak.healthCheck.liveness | nindent 10 }}
+          {{- end }}
         readinessProbe:
           httpGet:
             path: /health/ready
             port: {{ .Values.auth.keycloak.port }}
+          {{- if .Values.auth.keycloak.healthCheck.readiness }}
           {{- toYaml .Values.auth.keycloak.healthCheck.readiness | nindent 10 }}
+          {{- else }}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          {{- end }}
       volumes:
       - name: realm-config
         configMap:
