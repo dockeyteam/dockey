@@ -9,24 +9,13 @@ package grpc;
 
 service Checker {
 
-    rpc checkComment(Comm) returns (Check) {}
-
-    rpc checkDocument(Doc) returns (Check) {}
+    rpc checkText(Text) returns (Check) {}
 }
 
-message Doc {
-    string title = 1;
-    string contents = 2;
-}
-
-message Comm {
+message Text {
     string contents = 1;
 }
 
 message Check {
     string result = 1;
-    repeated string profanities = 2;
-    int32 count = 3;
-    string server_reference = 4;
-    int64 response_timestamp = 5;
 }

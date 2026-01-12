@@ -5,6 +5,7 @@ import com.dockey.docs.entities.Document;
 import com.dockey.docs.services.DocumentService;
 import com.dockey.docs.services.DocumentLineCommentService;
 import com.dockey.docs.services.KafkaCommentConsumer;
+import com.dockey.docs.grpc.CheckerClient;
 import com.kumuluz.ee.logs.LogManager;
 import com.kumuluz.ee.logs.Logger;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -39,7 +40,7 @@ public class DocumentResource {
     private DocumentLineCommentService documentLineCommentService;
 
     @Inject
-    private GrpcClient grpcClient;
+    private CheckerClient checkerClient;
     
     // Injecting to ensure Kafka consumer starts at application startup
     @Inject
@@ -144,6 +145,12 @@ public class DocumentResource {
         if (document.getTitle() == null || document.getUserId() == null) {
             return Response.status(Response.Status.BAD_REQUEST)
                 .entity("{\"error\": \"Title and userId are required\"}")
+                .build();
+        }
+
+        if (!checkerClient.checkText(document)) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                .entity("{\"error\": \"Document may contain inappropriate content\"}")
                 .build();
         }
         
