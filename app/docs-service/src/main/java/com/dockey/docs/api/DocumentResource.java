@@ -56,6 +56,25 @@ public class DocumentResource {
         List<Document> documents = documentService.getAllDocuments();
         return Response.ok(documents).build();
     }
+
+    @GET
+    @Path("/group/{groupId}")
+    @Operation(summary = "Get all documents from a group", description = "Retrieve metadata for all documents belonging to a specific group")
+    @APIResponses({
+            @APIResponse(
+                    responseCode = "200",
+                    description = "Group of documents retrieved successfully",
+                    content = @Content(schema = @Schema(implementation = com.dockey.docs.dto.DocumentMetadataResponse.class))
+            )
+    })
+    public Response getAllDocumentsByGroup(
+            @Parameter(description = "Document group ID", required = true)
+            @PathParam("groupId") Long groupId
+    ) {
+        LOG.info("GET request for all documents in group: {}", groupId);
+        List<com.dockey.docs.dto.DocumentMetadataResponse> documents = documentService.getAllDocumentsByGroup(groupId);
+        return Response.ok(documents).build();
+    }
     
     @GET
     @Path("/{id}")

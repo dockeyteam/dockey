@@ -2,6 +2,7 @@ import { docsServiceApi } from './api.client';
 import type {
   Document,
   DocumentResponse,
+  DocumentMetadata,
   CreateDocumentRequest,
   UpdateDocumentRequest,
   LineCommentCountResponse,
@@ -13,6 +14,16 @@ export const documentService = {
    */
   async getAllDocuments(): Promise<Document[]> {
     const response = await docsServiceApi.get<Document[]>('/v1/documents');
+    return response.data;
+  },
+
+  /**
+   * Get documents by group ID (metadata only, no content)
+   */
+  async getDocumentsByGroup(groupId: number): Promise<DocumentMetadata[]> {
+    const response = await docsServiceApi.get<DocumentMetadata[]>(
+      `/v1/documents/group/${groupId}`
+    );
     return response.data;
   },
 
