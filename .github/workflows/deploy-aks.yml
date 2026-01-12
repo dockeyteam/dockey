@@ -40,6 +40,11 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -85,6 +90,19 @@ jobs:
             ${{ env.REGISTRY }}/user-service:latest
           cache-from: type=registry,ref=${{ env.REGISTRY }}/user-service:buildcache
           cache-to: type=registry,ref=${{ env.REGISTRY }}/user-service:buildcache,mode=max
+
+      - name: Build and push frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app/frontend
+          push: true
+          build-args: |
+            BUILD_ENV=k8s
+          tags: |
+            ${{ env.REGISTRY }}/frontend:${{ env.IMAGE_TAG }}
+            ${{ env.REGISTRY }}/frontend:latest
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/frontend:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/frontend:buildcache,mode=max
 
   deploy:
     needs: build-and-push
@@ -139,8 +157,7 @@ jobs:
             --set services.comments.image.tag=${{ env.IMAGE_TAG }} \
             --set services.docs.image.tag=${{ env.IMAGE_TAG }} \
             --set services.user.image.tag=${{ env.IMAGE_TAG }} \
-            --wait \
-            --timeout 10m
+            --set services.frontend.image.tag=${{ env.IMAGE_TAG }}
 
       - name: Verify deployment
         run: |
