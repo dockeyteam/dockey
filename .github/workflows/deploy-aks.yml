@@ -139,7 +139,7 @@ jobs:
             --set services.comments.image.tag=${{ env.IMAGE_TAG }} \
             --set services.docs.image.tag=${{ env.IMAGE_TAG }} \
             --set services.user.image.tag=${{ env.IMAGE_TAG }} \
-            --wait \
+            --rollback-on-failure=false \
             --timeout 10m
 
       - name: Verify deployment
