@@ -37,6 +37,9 @@ public class DocumentResource {
     
     @Inject
     private DocumentLineCommentService documentLineCommentService;
+
+    @Inject
+    private GrpcClient grpcClient;
     
     // Injecting to ensure Kafka consumer starts at application startup
     @Inject

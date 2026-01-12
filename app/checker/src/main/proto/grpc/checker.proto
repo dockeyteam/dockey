@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.dockey.checker.";
+option java_outer_classname = "CheckerProto";
+option objc_class_prefix = "CHCK";
+
+package grpc;
+
+service Checker {
+
+    rpc checkComment(Comm) returns (Check) {}
+
+    rpc checkDocument(Doc) returns (Check) {}
+}
+
+message Doc {
+    String title = "";
+    String contents = "";
+}
+
+message Comm {
+    String contents = "";
+}
+
+message Check {
+    String result = "success";
+    String[] profanities = [];
+    int32 count = 0;
+    String server_reference = "web1";
+    int64 response_timestamp = 1733147849;
+}

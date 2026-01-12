@@ -1,4 +1,4 @@
-package com.dockey;
+package com.dockey.checker;
 
 /**
  * Hello world!
