@@ -138,9 +138,7 @@ jobs:
             --create-namespace \
             --set services.comments.image.tag=${{ env.IMAGE_TAG }} \
             --set services.docs.image.tag=${{ env.IMAGE_TAG }} \
-            --set services.user.image.tag=${{ env.IMAGE_TAG }} \
-            --rollback-on-failure=false \
-            --timeout 10m
+            --set services.user.image.tag=${{ env.IMAGE_TAG }}
 
       - name: Verify deployment
         run: |
