@@ -1,29 +1,47 @@
-package com.dockey.checker.services;
+package com.dockey.checker.grpc;
 
 
 import com.kumuluz.ee.logs.LogManager;
 import com.kumuluz.ee.logs.Logger;
+import com.dockey.checker.grpc.Doc;
+import com.dockey.checker.grpc.Comm;
+import com.dockey.checker.grpc.Check;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.*;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
-import java.util.List;
 
 @ApplicationScoped
 public class CheckingService {
         
     private static final Logger LOG = LogManager.getLogger(CheckingService.class.getName());
 
-    public void checkDocument(Long documentId) {
-        LOG.info("Checking document with id: {}", documentId);
-        return true; //placeholder
+    public Response checkDocument(String text) {
+        LOG.info("Checking document with content: {}", text);
+        Response r = ClientBuilder.newClient()
+            .target("https://zylalabs.com/api/1216/inappropriate+text+detection+api/1056/detector?text=" +
+                    "lalalalala" + "&level=1")
+            .request()
+            .header("Authorization", "Bearer YOUR_API_KEY_HERE")
+            .get(Response.class);
+        return r; // true; //placeholder
     }
 
 
-    public void checkComment(Long commentId) {
-        LOG.info("Checking comment with id: {}", commentId);
-        return true; //placeholder
+    public Response checkComment(String text) {
+        LOG.info("Checking comment with content: {}", text);
+        Response r = ClientBuilder.newClient()
+            .target("https://zylalabs.com/api/1216/inappropriate+text+detection+api/1056/detector?text=" +
+                    "lalalalala" + "&level=1")
+            .request()
+            .header("Authorization", "Bearer YOUR_API_KEY_HERE")
+            .get(Response.class);
+        return r; // true; //placeholder
     }
 
 
