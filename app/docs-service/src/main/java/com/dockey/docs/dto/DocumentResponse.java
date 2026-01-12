@@ -7,7 +7,11 @@ import java.util.Map;
 
 public class DocumentResponse {
     private Long id;
+    private Long groupId;
+    private String groupName;
+    private String groupDisplayName;
     private String title;
+    private String source;
     private String content;
     private Long userId;
     private Instant createdAt;
@@ -20,7 +24,16 @@ public class DocumentResponse {
 
     public DocumentResponse(Document document, Map<Integer, Integer> lineCommentCounts) {
         this.id = document.getId();
+        
+        // Map group information if available
+        if (document.getDocGroup() != null) {
+            this.groupId = document.getDocGroup().getId();
+            this.groupName = document.getDocGroup().getName();
+            this.groupDisplayName = document.getDocGroup().getDisplayName();
+        }
+        
         this.title = document.getTitle();
+        this.source = document.getSource();
         this.content = document.getContent();
         this.userId = document.getUserId();
         this.createdAt = document.getCreatedAt();
@@ -38,12 +51,44 @@ public class DocumentResponse {
         this.id = id;
     }
 
+    public Long getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(Long groupId) {
+        this.groupId = groupId;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
+    }
+
+    public String getGroupDisplayName() {
+        return groupDisplayName;
+    }
+
+    public void setGroupDisplayName(String groupDisplayName) {
+        this.groupDisplayName = groupDisplayName;
+    }
+
     public String getTitle() {
         return title;
     }
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setource(String source) {
+        this.source = source;
     }
 
     public String getContent() {

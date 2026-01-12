@@ -290,6 +290,29 @@ services:
       timeout: 15s
       retries: 10
       start_period: 40s 
+      
+  # Frontend (React)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: dockey-frontend
+    ports:
+      - "3000:80"
+    environment:
+      VITE_USER_SERVICE_URL: http://localhost:8081
+      VITE_DOCS_SERVICE_URL: http://localhost:8080
+      VITE_COMMENTS_SERVICE_URL: http://localhost:8082
+    depends_on:
+      - user-service
+      - docs-service
+      - comments-service
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:80/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     networks:
       - dockey-network
     restart: unless-stopped

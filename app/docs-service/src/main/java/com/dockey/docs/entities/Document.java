@@ -11,6 +11,10 @@ import java.time.Instant;
         query = "SELECT d FROM Document d"
     ),
     @NamedQuery(
+            name = "Document.findGroup",
+            query = "SELECT d FROM Document d WHERE d.docGroup.id = :groupId"
+    ),
+    @NamedQuery(
         name = "Document.findByUserId",
         query = "SELECT d FROM Document d WHERE d.userId = :userId"
     )
@@ -20,9 +24,16 @@ public class Document {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "group_id")
+    private DocGroup docGroup;
     
     @Column(nullable = false)
     private String title;
+
+    @Column
+    private String source;
     
     @Column(columnDefinition = "TEXT")
     private String content;
@@ -61,6 +72,14 @@ public class Document {
     public void setId(Long id) {
         this.id = id;
     }
+
+    public DocGroup getDocGroup() {
+        return docGroup;
+    }
+
+    public void setDocGroup(DocGroup docGroup) {
+        this.docGroup = docGroup;
+    }
     
     public String getTitle() {
         return title;
@@ -68,6 +87,14 @@ public class Document {
     
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
     
     public String getContent() {

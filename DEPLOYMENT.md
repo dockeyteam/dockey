@@ -794,5 +794,5 @@ kubectl logs -f -l app=user-service -n dockey &
 
 ---
 
-**Last Updated**: 2025-01-XX
+**Last Updated**: 2026-01-11
 **Maintained By**: DevOps Team

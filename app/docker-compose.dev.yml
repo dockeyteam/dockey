@@ -1,0 +1,311 @@
+version: '3.8'
+
+services:
+  # PostgreSQL for docs-service
+  docsdb:
+    image: postgres:15-alpine
+    container_name: dockey-docsdb
+    environment:
+      POSTGRES_DB: docsdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - docsdb_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d docsdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dockey-network
+
+  # PostgreSQL for user-service
+  usersdb:
+    image: postgres:15-alpine
+    container_name: dockey-usersdb
+    environment:
+      POSTGRES_DB: usersdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    ports:
+      - "5433:5432"
+    volumes:
+      - usersdb_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d usersdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dockey-network
+
+  # PostgreSQL for Keycloak
+  keycloakdb:
+    image: postgres:15-alpine
+    container_name: dockey-keycloakdb
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    ports:
+      - "5434:5432"
+    volumes:
+      - keycloakdb_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak -d keycloak"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dockey-network
+
+  # Keycloak
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: dockey-keycloak
+    command: start-dev --import-realm
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloakdb:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: true
+      KC_METRICS_ENABLED: true
+      KC_HOSTNAME_STRICT: false
+      KC_HOSTNAME_STRICT_HTTPS: false
+      KC_HTTP_ENABLED: true
+    ports:
+      - "8180:8080"
+    volumes:
+      - ./keycloak/dockey-realm.json:/opt/keycloak/data/import/dockey-realm.json:ro
+    depends_on:
+      keycloakdb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '200 OK'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    networks:
+      - dockey-network
+    restart: unless-stopped
+
+  # MongoDB for comments-service
+  commentsdb:
+    image: mongo:7.0
+    container_name: dockey-commentsdb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+      MONGO_INITDB_DATABASE: commentsdb
+    ports:
+      - "27017:27017"
+    volumes:
+      - commentsdb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dockey-network
+
+  # Zookeeper for Kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: dockey-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_logs:/var/lib/zookeeper/log
+    healthcheck:
+      test: ["CMD-SHELL", "echo srvr | nc localhost 2181 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - dockey-network
+
+  # Kafka
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: dockey-kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - dockey-network
+
+  # Docs Service (Development Mode)
+  docs-service:
+    build:
+      context: ./docs-service
+      dockerfile: Dockerfile
+    container_name: dockey-docs-service-dev
+    ports:
+      - "8080:8080"
+    environment:
+      KUMULUZEE_DATASOURCES0_CONNECTIONURL: jdbc:postgresql://docsdb:5432/docsdb
+      KUMULUZEE_DATASOURCES0_USERNAME: postgres
+      KUMULUZEE_DATASOURCES0_PASSWORD: postgres
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      KAFKA_CONSUMER_GROUP_ID: docs-service-group
+    depends_on:
+      docsdb:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - dockey-network
+    restart: unless-stopped
+
+  # User Service (Development Mode)
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: dockey-user-service-dev
+    ports:
+      - "8081:8081"
+    environment:
+      KUMULUZEE_DATASOURCES0_CONNECTIONURL: jdbc:postgresql://usersdb:5432/usersdb
+      KUMULUZEE_DATASOURCES0_USERNAME: postgres
+      KUMULUZEE_DATASOURCES0_PASSWORD: postgres
+      KEYCLOAK_AUTHSERVERURL: http://keycloak:8080
+      KEYCLOAK_REALM: dockey
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      KAFKA_CONSUMER_GROUP_ID: user-service-group
+    depends_on:
+      usersdb:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - dockey-network
+    restart: unless-stopped
+
+  # Comments Service (Development Mode)
+  comments-service:
+    build:
+      context: ./comments-service
+      dockerfile: Dockerfile
+    container_name: dockey-comments-service-dev
+    ports:
+      - "8082:8082"
+    environment:
+      MONGODB_CONNECTION_STRING: mongodb://admin:admin@commentsdb:27017/commentsdb?authSource=admin
+      MONGODB_DATABASE: commentsdb
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      KEYCLOAK_AUTHSERVERURL: http://keycloak:8080
+      KEYCLOAK_REALM: dockey
+    depends_on:
+      commentsdb:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8082/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - dockey-network
+    restart: unless-stopped
+
+  # Frontend (Development Mode with Vite Hot Reload)
+  frontend:
+    image: node:20-alpine
+    container_name: dockey-frontend-dev
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host"
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_USER_SERVICE_URL: http://localhost:8081
+      VITE_DOCS_SERVICE_URL: http://localhost:8080
+      VITE_COMMENTS_SERVICE_URL: http://localhost:8082
+    volumes:
+      # Mount entire frontend directory for hot reload
+      - ./frontend:/app
+      # Use anonymous volume for node_modules to avoid conflicts
+      - /app/node_modules
+    depends_on:
+      - user-service
+      - docs-service
+      - comments-service
+    networks:
+      - dockey-network
+    stdin_open: true
+    tty: true
+
+networks:
+  dockey-network:
+    driver: bridge
+    name: dockey-network
+
+volumes:
+  docsdb_data:
+    name: dockey-docsdb-data
+  usersdb_data:
+    name: dockey-usersdb-data
+  keycloakdb_data:
+    name: dockey-keycloakdb-data
+  commentsdb_data:
+    name: dockey-commentsdb-data
+  zookeeper_data:
+    name: dockey-zookeeper-data
+  zookeeper_logs:
+    name: dockey-zookeeper-logs
+  kafka_data:
+    name: dockey-kafka-data
