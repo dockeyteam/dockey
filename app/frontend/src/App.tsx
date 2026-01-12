@@ -2,7 +2,15 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import { HomePage, LoginPage, RegisterPage, DocumentsPage, ProfilePage } from './pages';
+import { 
+  HomePage, 
+  LoginPage, 
+  RegisterPage, 
+  DocumentsPage, 
+  DocGroupDetailPage,
+  DocumentDetailPage, 
+  ProfilePage 
+} from './pages';
 
 function App() {
   return (
@@ -19,6 +27,30 @@ function App() {
               element={
                 <ProtectedRoute>
                   <DocumentsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/docs/:groupName"
+              element={
+                <ProtectedRoute>
+                  <DocGroupDetailPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/docs/:groupName/:docSlug"
+              element={
+                <ProtectedRoute>
+                  <DocGroupDetailPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/documents/:id"
+              element={
+                <ProtectedRoute>
+                  <DocumentDetailPage />
                 </ProtectedRoute>
               }
             />

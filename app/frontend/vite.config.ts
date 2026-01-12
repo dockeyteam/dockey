@@ -16,6 +16,11 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      '/v1/doc-groups': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      },
       '/v1/comments': {
         target: 'http://localhost:8082',
         changeOrigin: true,

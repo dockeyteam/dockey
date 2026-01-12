@@ -1,5 +1,6 @@
 package com.dockey.docs.services;
 
+import com.dockey.docs.dto.DocumentMetadataResponse;
 import com.dockey.docs.entities.Document;
 import com.kumuluz.ee.logs.LogManager;
 import com.kumuluz.ee.logs.Logger;
@@ -24,11 +25,15 @@ public class DocumentService {
         return query.getResultList();
     }
 
-    public List<Object> getAllDocumentsByGroup(String group) {
-        LOG.info("Fetching all documents in group: {}");
-        TypedQuery<Object> query = em.createNamedQuery("Document.findGroup", Object.class);
-        query.setParameter("group", group);
-        return query.getResultList();
+    public List<DocumentMetadataResponse> getAllDocumentsByGroup(Long groupId) {
+        LOG.info("Fetching all documents in group id: {}", groupId);
+        TypedQuery<Document> query = em.createNamedQuery("Document.findGroup", Document.class);
+        query.setParameter("groupId", groupId);
+        
+        List<Document> documents = query.getResultList();
+        return documents.stream()
+                .map(DocumentMetadataResponse::new)
+                .collect(java.util.stream.Collectors.toList());
     }
     
     public Document getDocument(Long id) {

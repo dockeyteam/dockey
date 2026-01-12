@@ -10,11 +10,13 @@
         
         <class>com.dockey.docs.entities.Document</class>
         <class>com.dockey.docs.entities.DocumentLineComment</class>
+        <class>com.dockey.docs.entities.DocGroup</class>
+        
+        <exclude-unlisted-classes>true</exclude-unlisted-classes>
         
         <properties>
-            <property name="javax.persistence.schema-generation.database.action" value="drop-and-create"/>
-            <property name="javax.persistence.schema-generation.create-source" value="metadata"/>
-            <property name="javax.persistence.sql-load-script-source" value="sql/init.sql"/>
+            <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
+            <property name="hibernate.hbm2ddl.import_files" value="sql/init.sql"/>
             
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
             <property name="hibernate.show_sql" value="true"/>
