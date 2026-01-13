@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UserServiceGraphQL, User } from '../services/graphql';
+import { UserServiceGraphQL, type User } from '../services/graphql';
 import { Loading } from '../components';
 import toast from 'react-hot-toast';
 

@@ -7,7 +7,10 @@ const graphqlEndpoint = `${API_CONFIG.USER_SERVICE_URL}/graphql`;
 export const graphqlClient = new GraphQLClient(graphqlEndpoint, {
   headers: () => {
     const token = localStorage.getItem('dockey_access_token');
-    return token ? { Authorization: `Bearer ${token}` } : {};
+    if (token) {
+      return { Authorization: `Bearer ${token}` };
+    }
+    return {};
   },
 });
 
