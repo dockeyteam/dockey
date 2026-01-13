@@ -16,6 +16,7 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: {{ .Values.ingress.sslRedirect | quote }}
     nginx.ingress.kubernetes.io/rewrite-target: /v1/$2
     nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/priority: "100"
 spec:
   {{- if .Values.ingress.tls.enabled }}
   tls:
@@ -51,6 +52,7 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: {{ .Values.ingress.sslRedirect | quote }}
     nginx.ingress.kubernetes.io/rewrite-target: /v1/$2
     nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/priority: "100"
 spec:
   {{- if .Values.ingress.tls.enabled }}
   tls:
@@ -86,6 +88,7 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: {{ .Values.ingress.sslRedirect | quote }}
     nginx.ingress.kubernetes.io/rewrite-target: /api/$2
     nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/priority: "100"
 spec:
   {{- if .Values.ingress.tls.enabled }}
   tls:
@@ -119,6 +122,7 @@ metadata:
     cert-manager.io/cluster-issuer: {{ .Values.ingress.tls.clusterIssuer | quote }}
     {{- end }}
     nginx.ingress.kubernetes.io/ssl-redirect: {{ .Values.ingress.sslRedirect | quote }}
+    nginx.ingress.kubernetes.io/priority: "100"
 spec:
   {{- if .Values.ingress.tls.enabled }}
   tls:
@@ -152,6 +156,7 @@ metadata:
     cert-manager.io/cluster-issuer: {{ .Values.ingress.tls.clusterIssuer | quote }}
     {{- end }}
     nginx.ingress.kubernetes.io/ssl-redirect: {{ .Values.ingress.sslRedirect | quote }}
+    nginx.ingress.kubernetes.io/priority: "10"
 spec:
   {{- if .Values.ingress.tls.enabled }}
   tls:
