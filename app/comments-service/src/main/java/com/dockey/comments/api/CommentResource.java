@@ -6,6 +6,7 @@ import com.dockey.comments.entities.Comment;
 import com.dockey.comments.services.CommentService;
 import com.kumuluz.ee.logs.LogManager;
 import com.kumuluz.ee.logs.Logger;
+import com.dockey.comments.grpc.CheckerClient;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -30,6 +31,9 @@ public class CommentResource {
 
     @Inject
     private AuthenticationService authService;
+
+    @Inject
+    private CheckerClient checkerClient;
 
     @POST
     public Response createComment(@Valid CreateCommentRequest request) {

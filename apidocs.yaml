@@ -246,14 +246,14 @@ paths:
       description: Retrieve a list of all documents
       operationId: getAllDocuments
       responses:
-      '200':
-        description: List of documents retrieved successfully
-        content:
-        application/json:
-          schema:
-          type: array
-          items:
-            $ref: '#/components/schemas/Document'
+        '200':
+          description: List of documents retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Document'
     post:
       tags:
       - documents
@@ -261,22 +261,22 @@ paths:
       description: Create a new document in the system
       operationId: createDocument
       requestBody:
-      description: Document object to be created
-      content:
-        application/json:
-        schema:
-          $ref: '#/components/schemas/Document'
-      required: true
-      responses:
-      '201':
-        description: Document created successfully
+        description: Document object to be created
         content:
-        application/json:
-          schema:
-          $ref: '#/components/schemas/Document'
-      '400':
-        description: Invalid input
-    /documents/{id}:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Document'
+        required: true
+      responses:
+        '201':
+          description: Document created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '400':
+          description: Invalid input
+  /documents/{id}:
     get:
       tags:
       - documents
@@ -289,17 +289,17 @@ paths:
         description: Document ID
         required: true
         schema:
-        type: integer
-        format: int64
+          type: integer
+          format: int64
       responses:
-      '200':
-        description: Document retrieved successfully
-        content:
-        application/json:
-          schema:
-          $ref: '#/components/schemas/DocumentResponse'
-      '404':
-        description: Document not found
+        '200':
+          description: Document retrieved successfully
+          content:
+            application/json:
+                schema:
+                  $ref: '#/components/schemas/DocumentResponse'
+        '404':
+          description: Document not found
     put:
       tags:
       - documents
@@ -312,23 +312,23 @@ paths:
         description: Document ID
         required: true
         schema:
-        type: integer
-        format: int64
+          type: integer
+          format: int64
       requestBody:
-      description: Updated document object
-      content:
-        application/json:
-        schema:
-          $ref: '#/components/schemas/Document'
-      responses:
-      '200':
-        description: Document updated successfully
+        description: Updated document object
         content:
-        application/json:
-          schema:
-          $ref: '#/components/schemas/Document'
-      '404':
-        description: Document not found
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Document'
+      responses:
+        '200':
+          description: Document updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '404':
+          description: Document not found
     delete:
       tags:
       - documents
@@ -341,14 +341,14 @@ paths:
         description: Document ID
         required: true
         schema:
-        type: integer
-        format: int64
+          type: integer
+          format: int64
       responses:
-      '204':
-        description: Document deleted successfully
-      '404':
-        description: Document not found
-    /documents/group/{groupId}:
+        '204':
+          description: Document deleted successfully
+        '404':
+          description: Document not found
+  /documents/group/{groupId}:
     get:
       tags:
       - documents
@@ -361,18 +361,18 @@ paths:
         description: Document group ID
         required: true
         schema:
-        type: integer
-        format: int64
+          type: integer
+          format: int64
       responses:
-      '200':
-        description: Group of documents retrieved successfully
-        content:
-        application/json:
-          schema:
-          type: array
-          items:
-            $ref: '#/components/schemas/DocumentMetadataResponse'
-    /documents/user/{userId}:
+        '200':
+          description: Group of documents retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentMetadataResponse'
+  /documents/user/{userId}:
     get:
       tags:
       - documents
@@ -385,18 +385,18 @@ paths:
         description: User ID
         required: true
         schema:
-        type: integer
-        format: int64
+          type: integer
+          format: int64
       responses:
-      '200':
-        description: Documents retrieved successfully
-        content:
-        application/json:
-          schema:
-          type: array
-          items:
-            $ref: '#/components/schemas/Document'
-    /documents/{id}/line-comments:
+        '200':
+          description: Documents retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Document'
+  /documents/{id}/line-comments:
     get:
       tags:
       - documents
@@ -409,25 +409,25 @@ paths:
         description: Document ID
         required: true
         schema:
-        type: integer
-        format: int64
+          type: integer
+          format: int64
       responses:
-      '200':
-        description: Line comment counts retrieved successfully
-        content:
-        application/json:
-          schema:
-          type: object
-          properties:
-            documentId:
-            type: integer
-            format: int64
-            lineCommentCounts:
-            type: object
-            additionalProperties:
-              type: integer
-      '404':
-        description: Document not found
+        '200':
+          description: Line comment counts retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  documentId:
+                    type: integer
+                    format: int64
+                  lineCommentCounts:
+                    type: object
+                  additionalProperties:
+                    type: integer
+        '404':
+          description: Document not found
   /doc-groups:
     get:
       tags:
@@ -436,14 +436,14 @@ paths:
       description: Retrieve a list of all document groups
       operationId: getAllDocGroups
       responses:
-      '200':
-        description: List of document groups retrieved successfully
-        content:
-        application/json:
-          schema:
-          type: array
-          items:
-            $ref: '#/components/schemas/DocGroupResponse'
+        '200':
+          description: List of document groups retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocGroupResponse'
     post:
       tags:
       - doc-groups
@@ -451,23 +451,23 @@ paths:
       description: Create a new document group in the system
       operationId: createDocGroup
       requestBody:
-      description: Document group object to be created
-      content:
-        application/json:
-        schema:
-          $ref: '#/components/schemas/DocGroupRequest'
-      required: true
-      responses:
-      '201':
-        description: Document group created successfully
+        description: Document group object to be created
         content:
-        application/json:
-          schema:
-          $ref: '#/components/schemas/DocGroupResponse'
-      '400':
-        description: Invalid input
-    /doc-groups/{id}:
-      get:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocGroupRequest'
+        required: true
+      responses:
+        '201':
+          description: Document group created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocGroupResponse'
+        '400':
+          description: Invalid input
+  /doc-groups/{id}:
+    get:
       tags:
         - doc-groups
       summary: Get document group by ID
@@ -483,14 +483,14 @@ paths:
             format: int64
       responses:
         '200':
-        description: Document group retrieved successfully
-        content:
-          application/json:
-          schema:
-            $ref: '#/components/schemas/DocGroupResponse'
+          description: Document group retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocGroupResponse'
         '404':
-        description: Document group not found
-      put:
+          description: Document group not found
+    put:
       tags:
         - doc-groups
       summary: Update a document group
@@ -507,19 +507,19 @@ paths:
       requestBody:
         description: Updated document group object
         content:
-        application/json:
-          schema:
-          $ref: '#/components/schemas/DocGroupRequest'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocGroupRequest'
       responses:
         '200':
-        description: Document group updated successfully
-        content:
-          application/json:
-          schema:
-            $ref: '#/components/schemas/DocGroupResponse'
+          description: Document group updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocGroupResponse'
         '404':
-        description: Document group not found
-      delete:
+          description: Document group not found
+    delete:
       tags:
         - doc-groups
       summary: Delete a document group
@@ -535,6 +535,76 @@ paths:
             format: int64
       responses:
         '204':
-        description: Document group deleted successfully
+          description: Document group deleted successfully
         '404':
-        description: Document group not found
+          description: Document group not found
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+    Document:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        title:
+          type: string
+        content:
+          type: string
+        authorId:
+          type: integer
+          format: int64
+        groupId:
+          type: integer
+          format: int64
+    DocumentResponse:
+      allOf:
+        - $ref: '#/components/schemas/Document'
+        - type: object
+          properties:
+            lineCommentCounts:
+              type: object
+              additionalProperties:
+                type: integer
+    DocumentMetadataResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        title:
+          type: string
+        authorId:
+          type: integer
+          format: int64
+        groupId:
+          type: integer
+          format: int64
+    DocGroupRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+    DocGroupResponse:
+      allOf:
+        - $ref: '#/components/schemas/DocGroupRequest'
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
