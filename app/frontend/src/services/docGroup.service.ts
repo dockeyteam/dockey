@@ -11,7 +11,7 @@ export const docGroupService = {
    * Get all document groups
    */
   async getAllGroups(): Promise<DocGroup[]> {
-    const response = await docsServiceApi.get<DocGroup[]>('/v1/doc-groups');
+    const response = await docsServiceApi.get<DocGroup[]>('/doc-groups');
     return response.data;
   },
 
@@ -19,7 +19,7 @@ export const docGroupService = {
    * Get document group by ID
    */
   async getGroupById(id: number): Promise<DocGroup> {
-    const response = await docsServiceApi.get<DocGroup>(`/v1/doc-groups/${id}`);
+    const response = await docsServiceApi.get<DocGroup>(`/doc-groups/${id}`);
     return response.data;
   },
 
@@ -27,7 +27,7 @@ export const docGroupService = {
    * Get document group by name (slug)
    */
   async getGroupByName(name: string): Promise<DocGroup> {
-    const response = await docsServiceApi.get<DocGroup>(`/v1/doc-groups/name/${name}`);
+    const response = await docsServiceApi.get<DocGroup>(`/doc-groups/name/${name}`);
     return response.data;
   },
 
@@ -36,7 +36,7 @@ export const docGroupService = {
    */
   async getDocumentsInGroup(groupId: number): Promise<DocumentMetadata[]> {
     const response = await docsServiceApi.get<DocumentMetadata[]>(
-      `/v1/doc-groups/${groupId}/documents`
+      `/doc-groups/${groupId}/documents`
     );
     return response.data;
   },
@@ -45,7 +45,7 @@ export const docGroupService = {
    * Create a new document group
    */
   async createGroup(data: CreateDocGroupRequest): Promise<DocGroup> {
-    const response = await docsServiceApi.post<DocGroup>('/v1/doc-groups', data);
+    const response = await docsServiceApi.post<DocGroup>('/doc-groups', data);
     return response.data;
   },
 
@@ -53,7 +53,7 @@ export const docGroupService = {
    * Update a document group
    */
   async updateGroup(id: number, data: UpdateDocGroupRequest): Promise<DocGroup> {
-    const response = await docsServiceApi.put<DocGroup>(`/v1/doc-groups/${id}`, data);
+    const response = await docsServiceApi.put<DocGroup>(`/doc-groups/${id}`, data);
     return response.data;
   },
 
@@ -61,6 +61,6 @@ export const docGroupService = {
    * Delete a document group
    */
   async deleteGroup(id: number): Promise<void> {
-    await docsServiceApi.delete(`/v1/doc-groups/${id}`);
+    await docsServiceApi.delete(`/doc-groups/${id}`);
   },
 };
