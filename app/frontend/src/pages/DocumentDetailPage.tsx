@@ -41,7 +41,7 @@ export const DocumentDetailPage: React.FC = () => {
     return (
       <div className="flex">
         {/* Line numbers with comment indicators */}
-        <div className="bg-base-300 px-4 py-3 text-right select-none border-r border-base-content/10">
+        <div className="bg-base-300/30 px-6 py-4 text-right select-none border-r border-base-content/10">
           {lines.map((_, index) => {
             const lineNumber = index + 1;
             const commentCount = getCommentCountForLine(lineNumber);
@@ -49,24 +49,28 @@ export const DocumentDetailPage: React.FC = () => {
             return (
               <div
                 key={lineNumber}
-                className="flex items-center justify-end gap-2 font-mono text-sm leading-6 hover:bg-base-content/5"
+                className="flex items-center justify-end gap-3 font-mono text-sm leading-6 
+                           hover:bg-primary/5 transition-colors rounded px-2 -mx-2"
               >
                 {commentCount > 0 && (
-                  <span className="badge badge-primary badge-xs">
+                  <span className="px-2 py-0.5 rounded bg-primary/20 text-primary text-xs font-semibold">
                     {commentCount}
                   </span>
                 )}
-                <span className="text-base-content/50">{lineNumber}</span>
+                <span className="text-base-content/40 min-w-[3ch]">{lineNumber}</span>
               </div>
             );
           })}
         </div>
 
         {/* Content */}
-        <div className="flex-1 px-4 py-3 overflow-x-auto">
-          <pre className="font-mono text-sm leading-6 whitespace-pre">
+        <div className="flex-1 px-6 py-4 overflow-x-auto">
+          <pre className="font-mono text-sm leading-6 whitespace-pre text-base-content/90">
             {lines.map((line, index) => (
-              <div key={index} className="hover:bg-base-content/5">
+              <div 
+                key={index} 
+                className="hover:bg-primary/5 transition-colors rounded px-2 -mx-2"
+              >
                 {line || '\n'}
               </div>
             ))}
@@ -78,8 +82,37 @@ export const DocumentDetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <span className="loading loading-spinner loading-lg"></span>
+      <div className="min-h-screen animate-pulse">
+        {/* Header Skeleton */}
+        <div className="mb-8">
+          <div className="h-1 bg-primary mb-6"></div>
+          <div className="px-8">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="h-8 bg-base-content/10 rounded-lg w-20"></div>
+              <div className="flex-1">
+                <div className="h-10 bg-base-content/10 rounded-lg w-2/3 mb-2"></div>
+                <div className="h-5 bg-base-content/10 rounded-lg w-1/3"></div>
+              </div>
+              <div className="h-8 bg-base-content/10 rounded-lg w-24"></div>
+            </div>
+            <div className="flex gap-6">
+              <div className="h-5 bg-base-content/10 rounded-lg w-32"></div>
+              <div className="h-5 bg-base-content/10 rounded-lg w-40"></div>
+              <div className="h-5 bg-base-content/10 rounded-lg w-40"></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Content Skeleton */}
+        <div className="px-8 pb-8">
+          <div className="rounded-xl border border-base-content/10 p-6">
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
+                <div key={i} className="h-4 bg-base-content/10 rounded" style={{ width: `${Math.random() * 30 + 70}%` }}></div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -98,40 +131,48 @@ export const DocumentDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-base-100">
-      {/* Header */}
-      <div className="bg-base-200 border-b border-base-300">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center gap-4 mb-4">
-            <Link to="/documents" className="btn btn-ghost btn-sm">
+    <div className="min-h-screen">
+      {/* Header with primary accent bar */}
+      <div className="mb-8">
+        <div className="h-1 bg-primary mb-6"></div>
+        <div className="px-8">
+          <div className="flex items-center gap-4 mb-6">
+            <Link 
+              to="/documents" 
+              className="btn btn-ghost btn-sm hover:bg-base-content/5 transition-colors"
+            >
               ← Back
             </Link>
             <div className="flex-1">
-              <h1 className="text-3xl font-bold">{document.title}</h1>
+              <h1 className="text-4xl font-bold mb-2">{document.title}</h1>
               {document.source && (
-                <p className="text-sm text-base-content/70 mt-1">
+                <p className="text-base-content/60">
                   Source: {document.source}
                 </p>
               )}
             </div>
-            <div className="badge badge-outline badge-lg">{document.status}</div>
+            <div className="px-4 py-2 rounded-lg bg-primary/10 text-primary font-medium">
+              {document.status}
+            </div>
           </div>
 
           {/* Document metadata */}
-          <div className="flex gap-4 text-sm text-base-content/70">
+          <div className="flex gap-6 text-sm text-base-content/60">
             {document.groupDisplayName && (
               <div className="flex items-center gap-2">
-                <span className="font-semibold">Group:</span>
-                <span className="badge badge-primary">{document.groupDisplayName}</span>
+                <span className="font-semibold text-base-content/80">Group:</span>
+                <span className="px-3 py-1 rounded-lg bg-primary/10 text-primary">
+                  {document.groupDisplayName}
+                </span>
               </div>
             )}
             <div>
-              <span className="font-semibold">Created:</span>{' '}
+              <span className="font-semibold text-base-content/80">Created:</span>{' '}
               {new Date(document.createdAt).toLocaleString()}
             </div>
             {document.updatedAt && (
               <div>
-                <span className="font-semibold">Updated:</span>{' '}
+                <span className="font-semibold text-base-content/80">Updated:</span>{' '}
                 {new Date(document.updatedAt).toLocaleString()}
               </div>
             )}
@@ -140,23 +181,26 @@ export const DocumentDetailPage: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="container mx-auto px-4 py-6">
-        <div className="card bg-base-200 shadow-xl overflow-hidden">
-          <div className="card-body p-0">
-            {renderContentWithLineNumbers()}
-          </div>
+      <div className="px-8 pb-8">
+        <div 
+          className="rounded-xl bg-base-200/50 border border-base-content/10 overflow-hidden backdrop-blur-sm
+                     hover:shadow-lg hover:border-base-content/20 transition-all duration-200"
+        >
+          {renderContentWithLineNumbers()}
         </div>
 
         {/* Comment indicator info */}
         {document.lineCommentCounts && Object.keys(document.lineCommentCounts).length > 0 && (
-          <div className="alert alert-info mt-4">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-            <span>
-              Numbers next to line numbers indicate comment counts. 
-              Click on a line to view or add comments (feature coming soon).
-            </span>
+          <div className="mt-6 p-4 rounded-lg bg-info/10 border border-info/20 text-info">
+            <div className="flex items-start gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-5 h-5 mt-0.5 shrink-0">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" stroke="currentColor" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <span className="text-sm">
+                Numbers next to line numbers indicate comment counts. 
+                Click on a line to view or add comments (feature coming soon).
+              </span>
+            </div>
           </div>
         )}
       </div>

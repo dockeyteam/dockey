@@ -183,22 +183,36 @@ public class UserService {
         try {
             User user = em.find(User.class, id);
             
-            if (user != null) {
-                user.setUsername(updatedUser.getUsername());
-                user.setEmail(updatedUser.getEmail());
-                user.setFullName(updatedUser.getFullName());
-                user.setRole(updatedUser.getRole());
-                em.merge(user);
-                em.getTransaction().commit();
-                return user;
+            if (user == null) {
+                em.getTransaction().rollback();
+                return null;
             }
             
-            em.getTransaction().rollback();
-            return null;
+            // Only update fields that are provided (non-null) in the request
+            // The user entity is already managed, so we just set the fields
+            if (updatedUser.getUsername() != null) {
+                user.setUsername(updatedUser.getUsername());
+            }
+            if (updatedUser.getEmail() != null) {
+                user.setEmail(updatedUser.getEmail());
+            }
+            if (updatedUser.getFullName() != null) {
+                user.setFullName(updatedUser.getFullName());
+            }
+            if (updatedUser.getRole() != null) {
+                user.setRole(updatedUser.getRole());
+            }
+            
+            // No need to call merge - entity is already managed and will be updated on commit
+            em.getTransaction().commit();
+            LOG.info("User updated successfully: {}", id);
+            return user;
+            
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
             }
+            LOG.error("Error updating user: {}", e.getMessage(), e);
             throw e;
         }
     }

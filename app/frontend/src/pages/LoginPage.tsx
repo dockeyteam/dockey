@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import type { LoginRequest } from '../types';
 
@@ -8,7 +9,6 @@ export const LoginPage: React.FC = () => {
     username: '',
     password: '',
   });
-  const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -22,77 +22,111 @@ export const LoginPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     try {
       await login(formData);
       navigate('/documents');
+      toast.success(
+        (t) => (
+          <div className="flex items-center gap-2">
+            <span>Welcome back!</span>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="btn btn-ghost btn-xs btn-circle"
+            >
+              ✕
+            </button>
+          </div>
+        ),
+        { duration: 3000 }
+      );
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+      toast.error(
+        (t) => (
+          <div className="flex items-center gap-2">
+            <span>{err.response?.data?.message || 'Login failed. Please try again.'}</span>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="btn btn-ghost btn-xs btn-circle"
+            >
+              ✕
+            </button>
+          </div>
+        ),
+        { duration: 4000 }
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-base-200">
-      <div className="card w-96 bg-base-100 shadow-xl">
-        <div className="card-body">
-          <h2 className="card-title text-2xl font-bold justify-center mb-4">Login to Dockey</h2>
-          
-          {error && (
-            <div className="alert alert-error">
-              <span>{error}</span>
-            </div>
-          )}
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="w-full max-w-md">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold mb-2">Welcome Back</h1>
+          <p className="text-base-content/70">Sign in to your Dockey account</p>
+        </div>
 
-          <form onSubmit={handleSubmit}>
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Username</span>
+        {/* Form Card */}
+        <div className="rounded-2xl bg-base-100 border border-base-content/10 p-8 shadow-lg">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-sm font-semibold mb-2">
+                Username
               </label>
               <input
                 type="text"
                 name="username"
                 placeholder="Enter your username"
-                className="input input-bordered"
+                className="input input-bordered w-full"
                 value={formData.username}
                 onChange={handleChange}
                 required
               />
             </div>
 
-            <div className="form-control mt-4">
-              <label className="label">
-                <span className="label-text">Password</span>
+            <div>
+              <label className="block text-sm font-semibold mb-2">
+                Password
               </label>
               <input
                 type="password"
                 name="password"
                 placeholder="Enter your password"
-                className="input input-bordered"
+                className="input input-bordered w-full"
                 value={formData.password}
                 onChange={handleChange}
                 required
               />
             </div>
 
-            <div className="form-control mt-6">
-              <button type="submit" className="btn btn-primary" disabled={loading}>
-                {loading ? <span className="loading loading-spinner"></span> : 'Login'}
-              </button>
-            </div>
+            <button 
+              type="submit" 
+              className="btn btn-primary w-full"
+              disabled={loading}
+            >
+              {loading ? <span className="loading loading-spinner"></span> : 'Sign In'}
+            </button>
           </form>
 
-          <div className="divider">OR</div>
+          <div className="mt-6 pt-6 border-t border-base-content/10 text-center">
+            <p className="text-sm text-base-content/70">
+              Don't have an account?{' '}
+              <Link to="/register" className="font-semibold text-primary hover:underline">
+                Create one now
+              </Link>
+            </p>
+          </div>
+        </div>
 
-          <p className="text-center">
-            Don't have an account?{' '}
-            <Link to="/register" className="link link-primary">
-              Register here
-            </Link>
-          </p>
+        {/* Back to Documents */}
+        <div className="text-center mt-6">
+          <Link to="/documents" className="text-sm text-base-content/60 hover:text-base-content transition-colors">
+            ← Back to Documents
+          </Link>
         </div>
       </div>
     </div>

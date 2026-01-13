@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import type { RegisterRequest } from '../types';
 
@@ -11,7 +12,6 @@ export const RegisterPage: React.FC = () => {
     firstName: '',
     lastName: '',
   });
-  const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -25,41 +25,66 @@ export const RegisterPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     try {
       await register(formData);
       navigate('/documents');
+      toast.success(
+        (t) => (
+          <div className="flex items-center gap-2">
+            <span>Account created successfully!</span>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="btn btn-ghost btn-xs btn-circle"
+            >
+              ✕
+            </button>
+          </div>
+        ),
+        { duration: 3000 }
+      );
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+      toast.error(
+        (t) => (
+          <div className="flex items-center gap-2">
+            <span>{err.response?.data?.message || 'Registration failed. Please try again.'}</span>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="btn btn-ghost btn-xs btn-circle"
+            >
+              ✕
+            </button>
+          </div>
+        ),
+        { duration: 4000 }
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-base-200 py-8">
-      <div className="card w-96 bg-base-100 shadow-xl">
-        <div className="card-body">
-          <h2 className="card-title text-2xl font-bold justify-center mb-4">Register for Dockey</h2>
-          
-          {error && (
-            <div className="alert alert-error">
-              <span>{error}</span>
-            </div>
-          )}
+    <div className="min-h-screen flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold mb-2">Create Account</h1>
+          <p className="text-base-content/70">Join Dockey to unlock more features</p>
+        </div>
 
-          <form onSubmit={handleSubmit}>
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Username *</span>
+        {/* Form Card */}
+        <div className="rounded-2xl bg-base-100 border border-base-content/10 p-8 shadow-lg">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="block text-sm font-semibold mb-2">
+                Username <span className="text-error">*</span>
               </label>
               <input
                 type="text"
                 name="username"
                 placeholder="Choose a username"
-                className="input input-bordered"
+                className="input input-bordered w-full"
                 value={formData.username}
                 onChange={handleChange}
                 minLength={3}
@@ -68,30 +93,30 @@ export const RegisterPage: React.FC = () => {
               />
             </div>
 
-            <div className="form-control mt-4">
-              <label className="label">
-                <span className="label-text">Email *</span>
+            <div>
+              <label className="block text-sm font-semibold mb-2">
+                Email <span className="text-error">*</span>
               </label>
               <input
                 type="email"
                 name="email"
-                placeholder="Enter your email"
-                className="input input-bordered"
+                placeholder="your.email@example.com"
+                className="input input-bordered w-full"
                 value={formData.email}
                 onChange={handleChange}
                 required
               />
             </div>
 
-            <div className="form-control mt-4">
-              <label className="label">
-                <span className="label-text">Password *</span>
+            <div>
+              <label className="block text-sm font-semibold mb-2">
+                Password <span className="text-error">*</span>
               </label>
               <input
                 type="password"
                 name="password"
-                placeholder="Choose a password (min 6 chars)"
-                className="input input-bordered"
+                placeholder="Minimum 6 characters"
+                className="input input-bordered w-full"
                 value={formData.password}
                 onChange={handleChange}
                 minLength={6}
@@ -99,49 +124,60 @@ export const RegisterPage: React.FC = () => {
               />
             </div>
 
-            <div className="form-control mt-4">
-              <label className="label">
-                <span className="label-text">First Name</span>
-              </label>
-              <input
-                type="text"
-                name="firstName"
-                placeholder="Enter your first name"
-                className="input input-bordered"
-                value={formData.firstName}
-                onChange={handleChange}
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold mb-2">
+                  First Name
+                </label>
+                <input
+                  type="text"
+                  name="firstName"
+                  placeholder="First name"
+                  className="input input-bordered w-full"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-2">
+                  Last Name
+                </label>
+                <input
+                  type="text"
+                  name="lastName"
+                  placeholder="Last name"
+                  className="input input-bordered w-full"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                />
+              </div>
             </div>
 
-            <div className="form-control mt-4">
-              <label className="label">
-                <span className="label-text">Last Name</span>
-              </label>
-              <input
-                type="text"
-                name="lastName"
-                placeholder="Enter your last name"
-                className="input input-bordered"
-                value={formData.lastName}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div className="form-control mt-6">
-              <button type="submit" className="btn btn-primary" disabled={loading}>
-                {loading ? <span className="loading loading-spinner"></span> : 'Register'}
-              </button>
-            </div>
+            <button 
+              type="submit" 
+              className="btn btn-primary w-full mt-6"
+              disabled={loading}
+            >
+              {loading ? <span className="loading loading-spinner"></span> : 'Create Account'}
+            </button>
           </form>
 
-          <div className="divider">OR</div>
+          <div className="mt-6 pt-6 border-t border-base-content/10 text-center">
+            <p className="text-sm text-base-content/70">
+              Already have an account?{' '}
+              <Link to="/login" className="font-semibold text-primary hover:underline">
+                Sign in
+              </Link>
+            </p>
+          </div>
+        </div>
 
-          <p className="text-center">
-            Already have an account?{' '}
-            <Link to="/login" className="link link-primary">
-              Login here
-            </Link>
-          </p>
+        {/* Back to Documents */}
+        <div className="text-center mt-6">
+          <Link to="/documents" className="text-sm text-base-content/60 hover:text-base-content transition-colors">
+            ← Back to Documents
+          </Link>
         </div>
       </div>
     </div>

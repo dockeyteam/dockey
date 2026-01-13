@@ -1,9 +1,10 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
+import { DataCacheProvider } from './context/DataCacheContext';
 import { Navbar } from './components/Navbar';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { 
-  HomePage, 
   LoginPage, 
   RegisterPage, 
   DocumentsPage, 
@@ -16,44 +17,34 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <div className="min-h-screen bg-base-200">
-          <Navbar />
+        <DataCacheProvider>
+        <div className="min-h-screen bg-base-200 relative overflow-hidden">
+          {/* Topography Background Pattern */}
+          <div 
+            className="absolute inset-0 opacity-20 topography-pattern"
+          />
+          
+          {/* Fade at top */}
+          <div 
+            className="absolute top-0 left-0 right-0 h-[25%] pointer-events-none z-[5]"
+            style={{
+              background: 'linear-gradient(to bottom, #1e1e1e 0%, transparent 100%)',
+            }}
+          />
+          
+          <div className="relative z-10">
+            <Toaster 
+              position="top-right"
+            />
+            <Navbar />
           <Routes>
-            <Route path="/" element={<HomePage />} />
+            <Route path="/" element={<Navigate to="/documents" replace />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
-            <Route
-              path="/documents"
-              element={
-                <ProtectedRoute>
-                  <DocumentsPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/docs/:groupName"
-              element={
-                <ProtectedRoute>
-                  <DocGroupDetailPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/docs/:groupName/:docSlug"
-              element={
-                <ProtectedRoute>
-                  <DocGroupDetailPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/documents/:id"
-              element={
-                <ProtectedRoute>
-                  <DocumentDetailPage />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/documents" element={<DocumentsPage />} />
+            <Route path="/docs/:groupName" element={<DocGroupDetailPage />} />
+            <Route path="/docs/:groupName/:docSlug" element={<DocGroupDetailPage />} />
+            <Route path="/documents/:id" element={<DocumentDetailPage />} />
             <Route
               path="/profile"
               element={
@@ -63,7 +54,9 @@ function App() {
               }
             />
           </Routes>
+          </div>
         </div>
+        </DataCacheProvider>
       </AuthProvider>
     </Router>
   );
