@@ -21,12 +21,12 @@ public class CheckingService {
     public Response checkText(String text) {
         // just spits out the response for now
         LOG.info("Checking document with content: {}", text);
-        """Response r = ClientBuilder.newClient()
+        /* Response r = ClientBuilder.newClient()
             .target("https://zylalabs.com/api/1216/inappropriate+text+detection+api/1056/detector?text=" +
                     text)
             .request()
             .header("Authorization", "Bearer YOUR_API_KEY_HERE")
-            .get(Response.class);"""
+            .get(Response.class); */
         Response r = Response.ok().entity("{\"result\":\"success\"}").build(); 
         return r;
     }

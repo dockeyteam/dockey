@@ -58,6 +58,12 @@ public class CommentResource {
                 request.getContent()
             );
 
+            if (!checkerClient.checkText(comment)) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\": \"Comment may contain inappropriate content\"}")
+                    .build();
+            }
+
             Comment createdComment = commentService.createComment(comment);
             CommentResponse response = toResponse(createdComment, userId);
 
