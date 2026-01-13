@@ -71,6 +71,11 @@ spec:
             port: {{ .Values.auth.keycloak.port }}
           {{- if .Values.auth.keycloak.healthCheck.liveness }}
           {{- toYaml .Values.auth.keycloak.healthCheck.liveness | nindent 10 }}
+          {{- else }}
+          initialDelaySeconds: 300
+          periodSeconds: 30
+          timeoutSeconds: 30
+          failureThreshold: 5
           {{- end }}
         readinessProbe:
           httpGet:

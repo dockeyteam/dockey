@@ -110,7 +110,7 @@ services:
     image:
       repository: frontend
       tag: latest
-    replicas: 2  # Can scale horizontally
+    replicas: 1  # Reduced to 1 for memory-constrained environments
     port: 80
     resources:
       requests:
@@ -245,6 +245,13 @@ messaging:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "1"
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: "0"
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      # Enable verbose logging for debugging
+      KAFKA_LOG4J_ROOT_LOGLEVEL: "INFO"
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO,org.apache.kafka=INFO"
+      # Enable verbose output from wrapper script
+      KAFKA_OPTS: "-Dlog4j.configuration=file:/etc/kafka/log4j.properties"
+      # Force output to stdout/stderr
+      KAFKA_LOG_DIRS: "/var/log/kafka"
     resources:
       requests:
         memory: "300Mi"
@@ -278,8 +285,15 @@ auth:
         value: "-XX:+UseSerialGC -Xms256m -Xmx400m -Djava.net.preferIPv4Stack=true"
     healthCheck:
       liveness:
-        initialDelaySeconds: 180
+        initialDelaySeconds: 300
         periodSeconds: 30
+        timeoutSeconds: 30
+        failureThreshold: 5
+      readiness:
+        initialDelaySeconds: 120
+        periodSeconds: 15
+        timeoutSeconds: 20
+        failureThreshold: 5
 
 # Disable Prometheus for now to save ~100-200Mi RAM
 monitoring:

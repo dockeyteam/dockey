@@ -44,6 +44,26 @@ spec:
         ports:
         - containerPort: 9092
           name: kafka
+        # Enable verbose output and capture all logs including errors
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -x
+          echo "=== Environment Variables ==="
+          env | grep KAFKA | sort
+          echo "=== Checking ZooKeeper connectivity ==="
+          nc -zv zookeeper 2181 || echo "Cannot connect to ZooKeeper"
+          echo "=== Manually running wrapper script steps ==="
+          . /etc/confluent/docker/bash-config
+          echo "===> User"
+          id
+          echo "===> Configuring ..."
+          /etc/confluent/docker/configure || { echo "Configure failed with code: $?"; exit 1; }
+          echo "===> Running preflight checks ..."
+          /etc/confluent/docker/ensure || { echo "Ensure failed with code: $?"; exit 1; }
+          echo "===> Launching ..."
+          exec /etc/confluent/docker/launch
         env:
         {{- range $key, $value := .Values.messaging.kafka.env }}
         - name: {{ $key }}

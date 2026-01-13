@@ -63,6 +63,31 @@ spec:
         command:
         - mongod
         - --bind_ip_all
+        lifecycle:
+          postStart:
+            exec:
+              command:
+              - /bin/bash
+              - -c
+              - |
+                sleep 10
+                until mongosh --eval "db.adminCommand('ping')" 2>/dev/null; do sleep 1; done
+                USERNAME="$MONGO_INITDB_ROOT_USERNAME"
+                PASSWORD="$MONGO_INITDB_ROOT_PASSWORD"
+                mongosh admin --eval "
+                  try {
+                    db.getUser('$USERNAME');
+                    print('User $USERNAME already exists');
+                  } catch(e) {
+                    print('Creating admin user $USERNAME...');
+                    db.createUser({
+                      user: '$USERNAME',
+                      pwd: '$PASSWORD',
+                      roles: [{role: 'root', db: 'admin'}]
+                    });
+                    print('Admin user created successfully');
+                  }
+                " || echo "User check completed"
         resources:
           {{- toYaml .Values.databases.mongodb.comments.resources | nindent 10 }}
         livenessProbe:
