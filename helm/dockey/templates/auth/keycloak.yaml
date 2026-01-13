@@ -26,11 +26,9 @@ spec:
         - -c
         - |
           set -e
-          # Always rebuild to ensure PostgreSQL driver is included
           echo "Building Keycloak with PostgreSQL driver..."
           /opt/keycloak/bin/kc.sh build --db=postgres
           echo "Build completed successfully"
-          # Start Keycloak
           exec /opt/keycloak/bin/kc.sh start \
             --optimized \
             --import-realm \

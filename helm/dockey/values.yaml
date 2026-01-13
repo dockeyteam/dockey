@@ -245,20 +245,15 @@ messaging:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "1"
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: "0"
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-      # Enable verbose logging for debugging
-      KAFKA_LOG4J_ROOT_LOGLEVEL: "INFO"
-      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO,org.apache.kafka=INFO"
-      # Enable verbose output from wrapper script
-      KAFKA_OPTS: "-Dlog4j.configuration=file:/etc/kafka/log4j.properties"
-      # Force output to stdout/stderr
       KAFKA_LOG_DIRS: "/var/lib/kafka/data"
       KAFKA_NODE_ID: "1"
+      KAFKA_PORT: ""
     resources:
       requests:
         memory: "300Mi"
         cpu: "100m"
       limits:
-        memory: "1Gi" # Kafka needs headroom or it will crash violently
+        memory: "1Gi"
         cpu: "500m"
     healthCheck:
       liveness:
