@@ -21,12 +21,22 @@ spec:
       containers:
       - name: keycloak
         image: "{{ .Values.auth.keycloak.image.repository }}:{{ .Values.auth.keycloak.image.tag }}"
-        args:
-        - start
-        - --import-realm
-        - --hostname-strict=false
-        - --hostname-strict-https=false
-        - --http-enabled=true
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -e
+          # Always rebuild to ensure PostgreSQL driver is included
+          echo "Building Keycloak with PostgreSQL driver..."
+          /opt/keycloak/bin/kc.sh build --db=postgres
+          echo "Build completed successfully"
+          # Start Keycloak
+          exec /opt/keycloak/bin/kc.sh start \
+            --optimized \
+            --import-realm \
+            --hostname-strict=false \
+            --hostname-strict-https=false \
+            --http-enabled=true
         ports:
         - containerPort: {{ .Values.auth.keycloak.port }}
           name: http
@@ -121,6 +131,67 @@ metadata:
     {{- include "dockey.labels" . | nindent 4 }}
 data:
   dockey-realm.json: |
-    # Copy contents from app/keycloak/dockey-realm.json here
-    # Or mount as a volume from a secret/configmap
+    {
+      "realm": "dockey",
+      "enabled": true,
+      "displayName": "Dockey",
+      "registrationAllowed": false,
+      "resetPasswordAllowed": true,
+      "editUsernameAllowed": false,
+      "bruteForceProtected": true,
+      "accessTokenLifespan": 300,
+      "ssoSessionIdleTimeout": 1800,
+      "ssoSessionMaxLifespan": 36000,
+      "clients": [
+        {
+          "clientId": "dockey-user-service",
+          "name": "Dockey User Service",
+          "enabled": true,
+          "clientAuthenticatorType": "client-secret",
+          "secret": "dockey-user-service-secret-key-123",
+          "redirectUris": ["*"],
+          "webOrigins": ["*"],
+          "protocol": "openid-connect",
+          "publicClient": false,
+          "standardFlowEnabled": true,
+          "directAccessGrantsEnabled": true,
+          "serviceAccountsEnabled": true,
+          "fullScopeAllowed": true
+        },
+        {
+          "clientId": "dockey-frontend",
+          "name": "Dockey Frontend",
+          "enabled": true,
+          "redirectUris": [
+            "http://localhost:3000/*",
+            "http://localhost:8080/*",
+            "http://localhost:8081/*"
+          ],
+          "webOrigins": [
+            "http://localhost:3000",
+            "http://localhost:8080",
+            "http://localhost:8081"
+          ],
+          "protocol": "openid-connect",
+          "publicClient": true,
+          "standardFlowEnabled": true,
+          "directAccessGrantsEnabled": true,
+          "fullScopeAllowed": true
+        }
+      ],
+      "roles": {
+        "realm": [
+          {
+            "name": "ADMIN",
+            "description": "Administrator role"
+          },
+          {
+            "name": "USER",
+            "description": "Regular user role"
+          }
+        ]
+      },
+      "defaultRoles": ["USER"],
+      "passwordPolicy": "length(8)"
+    }
 {{- end }}
