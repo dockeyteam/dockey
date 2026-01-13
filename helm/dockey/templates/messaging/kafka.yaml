@@ -75,12 +75,9 @@ spec:
         resources:
           {{- toYaml .Values.messaging.kafka.resources | nindent 10 }}
         livenessProbe:
-          exec:
-            command:
-            - sh
-            - -c
-            - "kafka-broker-api-versions --bootstrap-server localhost:9092 || exit 1"
-          initialDelaySeconds: 90
+          tcpSocket:
+            port: 9092
+          initialDelaySeconds: 300
           periodSeconds: 30
           timeoutSeconds: 30
           failureThreshold: 3
@@ -90,9 +87,9 @@ spec:
             - sh
             - -c
             - "kafka-broker-api-versions --bootstrap-server localhost:9092 || exit 1"
-          initialDelaySeconds: 60
-          periodSeconds: 10
-          timeoutSeconds: 15
+          initialDelaySeconds: 300
+          periodSeconds: 30
+          timeoutSeconds: 30
           failureThreshold: 3
   volumeClaimTemplates:
   - metadata:

@@ -233,7 +233,7 @@ messaging:
     storage:
       size: "2Gi"
     env:
-      KAFKA_HEAP_OPTS: "-Xmx256M -Xms256M"
+      KAFKA_HEAP_OPTS: "-Xmx512M -Xms512M"  
       KAFKA_BROKER_ID: "1"
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT"
@@ -251,17 +251,18 @@ messaging:
       # Enable verbose output from wrapper script
       KAFKA_OPTS: "-Dlog4j.configuration=file:/etc/kafka/log4j.properties"
       # Force output to stdout/stderr
-      KAFKA_LOG_DIRS: "/var/log/kafka"
+      KAFKA_LOG_DIRS: "/var/lib/kafka/data"
+      KAFKA_NODE_ID: "1"
     resources:
       requests:
         memory: "300Mi"
         cpu: "100m"
       limits:
-        memory: "600Mi" # Kafka needs headroom or it will crash violently
+        memory: "1Gi" # Kafka needs headroom or it will crash violently
         cpu: "500m"
     healthCheck:
       liveness:
-        initialDelaySeconds: 120
+        initialDelaySeconds: 300
         periodSeconds: 30
 
 auth:
