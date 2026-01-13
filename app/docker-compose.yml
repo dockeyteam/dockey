@@ -316,6 +316,27 @@ services:
     networks:
       - dockey-network
     restart: unless-stopped
+      
+  # GRPC Checker Service
+  checker:
+    build:
+      context: ./checker
+      dockerfile: Dockerfile
+    container_name: dockey-checker
+    ports:
+      - "8088:50051"
+    depends_on:
+      - docs-service
+      - comments-service
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:50051/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - dockey-network
+    restart: unless-stopped
 
 networks:
   dockey-network:
