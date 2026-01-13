@@ -39,14 +39,18 @@ spec:
           httpGet:
             path: /-/healthy
             port: 9090
-          initialDelaySeconds: 30
-          periodSeconds: 10
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 5
         readinessProbe:
           httpGet:
             path: /-/ready
             port: 9090
-          initialDelaySeconds: 10
-          periodSeconds: 5
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          timeoutSeconds: 5
+          failureThreshold: 5
       volumes:
       - name: prometheus-config
         configMap:

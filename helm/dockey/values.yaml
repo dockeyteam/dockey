@@ -31,9 +31,15 @@ services:
       keycloakRealm: "dockey"
     healthCheck:
       liveness:
-        initialDelaySeconds: 120
-        periodSeconds: 20
-        timeoutSeconds: 5
+        initialDelaySeconds: 180
+        periodSeconds: 30
+        timeoutSeconds: 30
+        failureThreshold: 5
+      readiness:
+        initialDelaySeconds: 60
+        periodSeconds: 15
+        timeoutSeconds: 20
+        failureThreshold: 5
 
   docs:
     enabled: true
@@ -56,8 +62,15 @@ services:
       kafkaConsumerGroupId: "docs-service-group"
     healthCheck:
       liveness:
-        initialDelaySeconds: 120
-        periodSeconds: 20
+        initialDelaySeconds: 180
+        periodSeconds: 30
+        timeoutSeconds: 30
+        failureThreshold: 5
+      readiness:
+        initialDelaySeconds: 60
+        periodSeconds: 15
+        timeoutSeconds: 20
+        failureThreshold: 5
 
   user:
     enabled: true
@@ -82,8 +95,15 @@ services:
       kafkaConsumerGroupId: "user-service-group"
     healthCheck:
       liveness:
-        initialDelaySeconds: 120
-        periodSeconds: 20
+        initialDelaySeconds: 180
+        periodSeconds: 30
+        timeoutSeconds: 30
+        failureThreshold: 5
+      readiness:
+        initialDelaySeconds: 60
+        periodSeconds: 15
+        timeoutSeconds: 20
+        failureThreshold: 5
 
   frontend:
     enabled: true
@@ -106,11 +126,15 @@ services:
       VITE_COMMENTS_SERVICE_URL: "/api/comments"
     healthCheck:
       liveness:
-        initialDelaySeconds: 10
-        periodSeconds: 10
+        initialDelaySeconds: 60
+        periodSeconds: 30
+        timeoutSeconds: 10
+        failureThreshold: 5
       readiness:
-        initialDelaySeconds: 5
-        periodSeconds: 5
+        initialDelaySeconds: 30
+        periodSeconds: 10
+        timeoutSeconds: 5
+        failureThreshold: 5
 
 databases:
   postgres:
@@ -174,11 +198,11 @@ databases:
         size: "10Gi"
       resources:
         requests:
-          memory: "128Mi"
-          cpu: "50m"
+          memory: "512Mi"
+          cpu: "100m"
         limits:
-          memory: "256Mi"
-          cpu: "200m"
+          memory: "1Gi"
+          cpu: "500m"
 
 messaging:
   zookeeper:

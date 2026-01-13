@@ -60,17 +60,17 @@ spec:
         livenessProbe:
           tcpSocket:
             port: 2181
-          initialDelaySeconds: 60
+          initialDelaySeconds: 90
           periodSeconds: 30
           timeoutSeconds: 10
-          failureThreshold: 3
+          failureThreshold: 5
         readinessProbe:
           tcpSocket:
             port: 2181
-          initialDelaySeconds: 30
-          periodSeconds: 10
+          initialDelaySeconds: 60
+          periodSeconds: 15
           timeoutSeconds: 5
-          failureThreshold: 3
+          failureThreshold: 5
   volumeClaimTemplates:
   - metadata:
       name: zookeeper-data

@@ -60,8 +60,10 @@ spec:
           {{- if .Values.services.docs.healthCheck.readiness }}
           {{- toYaml .Values.services.docs.healthCheck.readiness | nindent 10 }}
           {{- else }}
-          initialDelaySeconds: 30
-          periodSeconds: 10
+          initialDelaySeconds: 60
+          periodSeconds: 15
+          timeoutSeconds: 20
+          failureThreshold: 5
           {{- end }}
 ---
 apiVersion: v1
