@@ -302,6 +302,7 @@ public class UserResource {
     
     @PUT
     @Path("/{id}")
+    @RolesAllowed({"USER", "ADMIN"})
     @Operation(summary = "Update a user", description = "Update an existing user")
     @APIResponses({
         @APIResponse(
@@ -309,7 +310,8 @@ public class UserResource {
             description = "User updated successfully",
             content = @Content(schema = @Schema(implementation = User.class))
         ),
-        @APIResponse(responseCode = "404", description = "User not found")
+        @APIResponse(responseCode = "404", description = "User not found"),
+        @APIResponse(responseCode = "403", description = "Forbidden - can only update own profile")
     })
     public Response updateUser(
         @Parameter(description = "User ID", required = true)
@@ -317,6 +319,14 @@ public class UserResource {
         User user
     ) {
         LOG.info("PUT request to update user with id: {}", id);
+        
+        // Check if user is trying to update their own account or is admin
+        if (!authService.isAdmin() && !authService.isCurrentUser(id)) {
+            return Response.status(Response.Status.FORBIDDEN)
+                .entity("{\"error\": \"You can only update your own profile\"}")
+                .build();
+        }
+        
         User updated = userService.updateUser(id, user);
         
         if (updated != null) {
