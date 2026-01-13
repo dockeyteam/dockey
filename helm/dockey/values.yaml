@@ -312,9 +312,9 @@ monitoring:
 ingress:
   enabled: true
   className: nginx
-  host: dockey.example.com  # Change to your actual domain
-  sslRedirect: "true"
+  host: ""  # Empty for IP-based access, set to domain when ready
+  sslRedirect: "false"
   tls:
-    enabled: true
+    enabled: false  # Disable TLS for IP-based access
     clusterIssuer: letsencrypt-prod
     secretName: dockey-tls

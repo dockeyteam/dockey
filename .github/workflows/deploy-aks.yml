@@ -15,6 +15,13 @@ on:
       - dev
   release:
     types: [created]
+  workflow_dispatch:  # Allow manual trigger for debugging
+    inputs:
+      no_cache:
+        description: 'Build without cache (force fresh build)'
+        required: false
+        default: 'false'
+        type: boolean
 
 env:
   ACR_NAME: dockey
@@ -61,6 +68,15 @@ jobs:
         if: github.event_name != 'pull_request'
         run: az acr login --name dockey
 
+      - name: Build info
+        run: |
+          echo "🔨 Build Configuration"
+          echo "======================"
+          echo "Commit SHA: ${{ env.IMAGE_TAG }}"
+          echo "No-cache: ${{ inputs.no_cache || 'false' }}"
+          echo "Event: ${{ github.event_name }}"
+          echo "Ref: ${{ github.ref }}"
+
       - name: Build and push comments-service
         uses: docker/build-push-action@v5
         with:
@@ -69,7 +85,8 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/comments-service:${{ env.IMAGE_TAG }}
             ${{ env.REGISTRY }}/comments-service:latest
-          cache-from: ${{ github.event_name != 'pull_request' && 'type=registry,ref=dockey.azurecr.io/comments-service:buildcache' || '' }}
+          no-cache: ${{ inputs.no_cache == true }}
+          cache-from: ${{ github.event_name != 'pull_request' && inputs.no_cache != true && 'type=registry,ref=dockey.azurecr.io/comments-service:buildcache' || '' }}
           cache-to: ${{ github.event_name != 'pull_request' && 'type=registry,ref=dockey.azurecr.io/comments-service:buildcache,mode=max' || '' }}
 
       - name: Build and push docs-service
@@ -80,7 +97,8 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/docs-service:${{ env.IMAGE_TAG }}
             ${{ env.REGISTRY }}/docs-service:latest
-          cache-from: ${{ github.event_name != 'pull_request' && 'type=registry,ref=dockey.azurecr.io/docs-service:buildcache' || '' }}
+          no-cache: ${{ inputs.no_cache == true }}
+          cache-from: ${{ github.event_name != 'pull_request' && inputs.no_cache != true && 'type=registry,ref=dockey.azurecr.io/docs-service:buildcache' || '' }}
           cache-to: ${{ github.event_name != 'pull_request' && 'type=registry,ref=dockey.azurecr.io/docs-service:buildcache,mode=max' || '' }}
 
       - name: Build and push user-service
@@ -91,7 +109,8 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/user-service:${{ env.IMAGE_TAG }}
             ${{ env.REGISTRY }}/user-service:latest
-          cache-from: ${{ github.event_name != 'pull_request' && 'type=registry,ref=dockey.azurecr.io/user-service:buildcache' || '' }}
+          no-cache: ${{ inputs.no_cache == true }}
+          cache-from: ${{ github.event_name != 'pull_request' && inputs.no_cache != true && 'type=registry,ref=dockey.azurecr.io/user-service:buildcache' || '' }}
           cache-to: ${{ github.event_name != 'pull_request' && 'type=registry,ref=dockey.azurecr.io/user-service:buildcache,mode=max' || '' }}
 
       - name: Build and push frontend
@@ -104,7 +123,8 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/frontend:${{ env.IMAGE_TAG }}
             ${{ env.REGISTRY }}/frontend:latest
-          cache-from: ${{ github.event_name != 'pull_request' && 'type=registry,ref=dockey.azurecr.io/frontend:buildcache' || '' }}
+          no-cache: ${{ inputs.no_cache == true }}
+          cache-from: ${{ github.event_name != 'pull_request' && inputs.no_cache != true && 'type=registry,ref=dockey.azurecr.io/frontend:buildcache' || '' }}
           cache-to: ${{ github.event_name != 'pull_request' && 'type=registry,ref=dockey.azurecr.io/frontend:buildcache,mode=max' || '' }}
 
   deploy:
@@ -162,8 +182,23 @@ jobs:
             --set services.user.image.tag=${{ env.IMAGE_TAG }} \
             --set services.frontend.image.tag=${{ env.IMAGE_TAG }}
 
+      - name: Force pod restart to pull latest images
+        run: |
+          # Restart deployments to ensure they pull the latest images
+          kubectl rollout restart deployment/frontend -n dockey || true
+          kubectl rollout restart deployment/user-service -n dockey || true
+          kubectl rollout restart deployment/docs-service -n dockey || true
+          kubectl rollout restart deployment/comments-service -n dockey || true
+          
+          # Wait for rollouts to complete
+          kubectl rollout status deployment/frontend -n dockey --timeout=120s || true
+          kubectl rollout status deployment/user-service -n dockey --timeout=120s || true
+          kubectl rollout status deployment/docs-service -n dockey --timeout=120s || true
+          kubectl rollout status deployment/comments-service -n dockey --timeout=120s || true
+
       - name: Verify deployment
         run: |
           helm status dockey -n dockey
           kubectl get pods -n dockey
           kubectl get svc -n dockey
+          kubectl get ingress -n dockey
