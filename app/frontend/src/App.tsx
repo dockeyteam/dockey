@@ -10,7 +10,9 @@ import {
   DocumentsPage, 
   DocGroupDetailPage,
   DocumentDetailPage, 
-  ProfilePage 
+  ProfilePage,
+  UsersPage,
+  UserDetailPage
 } from './pages';
 
 function App() {
@@ -45,6 +47,22 @@ function App() {
             <Route path="/docs/:groupName" element={<DocGroupDetailPage />} />
             <Route path="/docs/:groupName/:docSlug" element={<DocGroupDetailPage />} />
             <Route path="/documents/:id" element={<DocumentDetailPage />} />
+            <Route
+              path="/users"
+              element={
+                <ProtectedRoute>
+                  <UsersPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/users/:id"
+              element={
+                <ProtectedRoute>
+                  <UserDetailPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/profile"
               element={

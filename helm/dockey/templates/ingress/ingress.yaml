@@ -1,0 +1,173 @@
+{{- if .Values.ingress.enabled }}
+---
+# User Service Ingress - Rewrites /api/users/* to /v1/*
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dockey-ingress-users
+  namespace: {{ include "dockey.namespace" . }}
+  labels:
+    {{- include "dockey.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.ingress.className | quote }}
+    {{- if .Values.ingress.tls.enabled }}
+    cert-manager.io/cluster-issuer: {{ .Values.ingress.tls.clusterIssuer | quote }}
+    {{- end }}
+    nginx.ingress.kubernetes.io/ssl-redirect: {{ .Values.ingress.sslRedirect | quote }}
+    nginx.ingress.kubernetes.io/rewrite-target: /v1/$2
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+  - hosts:
+    - {{ .Values.ingress.host | quote }}
+    secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+  - host: {{ .Values.ingress.host | quote }}
+    http:
+      paths:
+      - path: /api/users(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: user-service
+            port:
+              number: {{ .Values.services.user.port }}
+---
+# Docs Service Ingress - Rewrites /api/docs/* to /v1/*
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dockey-ingress-docs
+  namespace: {{ include "dockey.namespace" . }}
+  labels:
+    {{- include "dockey.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.ingress.className | quote }}
+    {{- if .Values.ingress.tls.enabled }}
+    cert-manager.io/cluster-issuer: {{ .Values.ingress.tls.clusterIssuer | quote }}
+    {{- end }}
+    nginx.ingress.kubernetes.io/ssl-redirect: {{ .Values.ingress.sslRedirect | quote }}
+    nginx.ingress.kubernetes.io/rewrite-target: /v1/$2
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+  - hosts:
+    - {{ .Values.ingress.host | quote }}
+    secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+  - host: {{ .Values.ingress.host | quote }}
+    http:
+      paths:
+      - path: /api/docs(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: docs-service
+            port:
+              number: {{ .Values.services.docs.port }}
+---
+# Comments Service Ingress - Rewrites /api/comments/* to /api/*
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dockey-ingress-comments
+  namespace: {{ include "dockey.namespace" . }}
+  labels:
+    {{- include "dockey.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.ingress.className | quote }}
+    {{- if .Values.ingress.tls.enabled }}
+    cert-manager.io/cluster-issuer: {{ .Values.ingress.tls.clusterIssuer | quote }}
+    {{- end }}
+    nginx.ingress.kubernetes.io/ssl-redirect: {{ .Values.ingress.sslRedirect | quote }}
+    nginx.ingress.kubernetes.io/rewrite-target: /api/$2
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+  - hosts:
+    - {{ .Values.ingress.host | quote }}
+    secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+  - host: {{ .Values.ingress.host | quote }}
+    http:
+      paths:
+      - path: /api/comments(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: comments-service
+            port:
+              number: {{ .Values.services.comments.port }}
+---
+# Keycloak Ingress - No rewrite needed
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dockey-ingress-auth
+  namespace: {{ include "dockey.namespace" . }}
+  labels:
+    {{- include "dockey.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.ingress.className | quote }}
+    {{- if .Values.ingress.tls.enabled }}
+    cert-manager.io/cluster-issuer: {{ .Values.ingress.tls.clusterIssuer | quote }}
+    {{- end }}
+    nginx.ingress.kubernetes.io/ssl-redirect: {{ .Values.ingress.sslRedirect | quote }}
+spec:
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+  - hosts:
+    - {{ .Values.ingress.host | quote }}
+    secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+  - host: {{ .Values.ingress.host | quote }}
+    http:
+      paths:
+      - path: /auth
+        pathType: Prefix
+        backend:
+          service:
+            name: keycloak
+            port:
+              number: {{ .Values.auth.keycloak.port }}
+---
+# Frontend Ingress - Catch-all for React Router (MUST BE LAST)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dockey-ingress-frontend
+  namespace: {{ include "dockey.namespace" . }}
+  labels:
+    {{- include "dockey.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.ingress.className | quote }}
+    {{- if .Values.ingress.tls.enabled }}
+    cert-manager.io/cluster-issuer: {{ .Values.ingress.tls.clusterIssuer | quote }}
+    {{- end }}
+    nginx.ingress.kubernetes.io/ssl-redirect: {{ .Values.ingress.sslRedirect | quote }}
+spec:
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+  - hosts:
+    - {{ .Values.ingress.host | quote }}
+    secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+  - host: {{ .Values.ingress.host | quote }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port:
+              number: {{ .Values.services.frontend.port }}
+{{- end }}

@@ -136,6 +136,25 @@ main() {
     build_and_push_image "docs-service" "./app/docs-service"
     build_and_push_image "user-service" "./app/user-service"
     
+    # Build frontend with K8s environment variables
+    print_info "Building frontend with K8s configuration..."
+    docker build --platform linux/amd64 \
+                 --build-arg BUILD_ENV=k8s \
+                 -t ${REGISTRY}/frontend:${IMAGE_TAG} \
+                 -t ${REGISTRY}/frontend:latest \
+                 -f ./app/frontend/Dockerfile \
+                 ./app/frontend
+    
+    if [ $? -eq 0 ]; then
+        print_info "Successfully built frontend"
+        print_info "Pushing frontend to ACR..."
+        docker push ${REGISTRY}/frontend:${IMAGE_TAG}
+        docker push ${REGISTRY}/frontend:latest
+        print_info "Successfully pushed frontend:${IMAGE_TAG}"
+    else
+        print_error "Failed to build frontend"
+    fi
+    
     echo
     verify_images
     

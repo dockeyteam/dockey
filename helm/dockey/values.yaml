@@ -311,3 +311,14 @@ monitoring:
       limits:
         memory: "128Mi"
         cpu: "100m"
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: nginx
+  host: dockey.example.com  # Change to your actual domain
+  sslRedirect: "true"
+  tls:
+    enabled: true
+    clusterIssuer: letsencrypt-prod
+    secretName: dockey-tls

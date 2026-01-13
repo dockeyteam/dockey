@@ -49,6 +49,7 @@ export const Navbar: React.FC = () => {
                   <div className="text-xs opacity-60 px-4">{user?.role}</div>
                 </div>
                 <li><Link to="/profile">Profile</Link></li>
+                <li><Link to="/users">Users</Link></li>
                 <li className="md:hidden"><Link to="/documents">Documents</Link></li>
                 <div className="border-b-2 border-base-content/10 my-2"></div>
                 <li><a onClick={handleLogout} className="text-error">Logout</a></li>

@@ -4,3 +4,5 @@ export { DocumentsPage } from './DocumentsPage';
 export { DocGroupDetailPage } from './DocGroupDetailPage';
 export { DocumentDetailPage } from './DocumentDetailPage';
 export { ProfilePage } from './ProfilePage';
+export { UsersPage } from './UsersPage';
+export { UserDetailPage } from './UserDetailPage';
