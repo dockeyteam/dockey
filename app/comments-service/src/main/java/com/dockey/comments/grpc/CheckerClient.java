@@ -21,9 +21,10 @@ public class CheckerClient {
 
     private final CheckerBlockingStub blockingStub;
 
-    ManagedChannel channel = Grpc.newChannelBuilder("dockey-checker:50051", InsecureChannelCredentials.create()).build();
+    private final ManagedChannel channel;
     
-    public CheckerClient(Channel channel) {
+    public CheckerClient() {
+        channel = Grpc.newChannelBuilder("dockey-checker:50051", InsecureChannelCredentials.create()).build();
         blockingStub = CheckerGrpc.newBlockingStub(channel);
     }
 
