@@ -14,7 +14,7 @@ export const authService = {
    * Register a new user
    */
   async register(data: RegisterRequest): Promise<AuthResponse> {
-    const response = await userServiceApi.post<AuthResponse>('/v1/users/register', data);
+    const response = await userServiceApi.post<AuthResponse>('/users/register', data);
     const authData = response.data;
     
     // Store tokens and user data
@@ -33,7 +33,7 @@ export const authService = {
    * Login user
    */
   async login(data: LoginRequest): Promise<AuthResponse> {
-    const response = await userServiceApi.post<AuthResponse>('/v1/users/login', data);
+    const response = await userServiceApi.post<AuthResponse>('/users/login', data);
     const authData = response.data;
     
     // Store tokens and user data
@@ -53,7 +53,7 @@ export const authService = {
    */
   async refresh(refreshToken: string): Promise<RefreshTokenResponse> {
     const response = await userServiceApi.post<RefreshTokenResponse>(
-      '/v1/users/refresh',
+      '/users/refresh',
       { refreshToken } as RefreshTokenRequest
     );
     const data = response.data;

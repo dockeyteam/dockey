@@ -69,7 +69,7 @@ export const refreshAccessToken = async (): Promise<string> => {
 
   try {
     const response = await axios.post(
-      `${API_CONFIG.USER_SERVICE_URL}/v1/users/refresh`,
+      `${API_CONFIG.USER_SERVICE_URL}/users/refresh`,
       { refreshToken }
     );
 

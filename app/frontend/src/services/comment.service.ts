@@ -6,7 +6,7 @@ export const commentService = {
    * Create a new comment
    */
   async createComment(data: CreateCommentRequest): Promise<Comment> {
-    const response = await commentsServiceApi.post<Comment>('/v1/comments', data);
+    const response = await commentsServiceApi.post<Comment>('/comments', data);
     return response.data;
   },
 
@@ -18,7 +18,7 @@ export const commentService = {
     if (lineNumber !== undefined) {
       params.append('lineNumber', lineNumber.toString());
     }
-    const response = await commentsServiceApi.get<Comment[]>(`/v1/comments?${params.toString()}`);
+    const response = await commentsServiceApi.get<Comment[]>(`/comments?${params.toString()}`);
     return response.data;
   },
 
@@ -27,7 +27,7 @@ export const commentService = {
    */
   async getCommentsByLine(docId: string, lineNumber: number): Promise<Comment[]> {
     const response = await commentsServiceApi.get<Comment[]>(
-      `/v1/comments/${docId}/line/${lineNumber}`
+      `/comments/${docId}/line/${lineNumber}`
     );
     return response.data;
   },
@@ -37,7 +37,7 @@ export const commentService = {
    */
   async getLineCommentCounts(docId: string): Promise<LineCommentCountResponse> {
     const response = await commentsServiceApi.get<LineCommentCountResponse>(
-      `/v1/comments/${docId}/line-counts`
+      `/comments/${docId}/line-counts`
     );
     return response.data;
   },
@@ -46,7 +46,7 @@ export const commentService = {
    * Like a comment
    */
   async likeComment(commentId: string): Promise<Comment> {
-    const response = await commentsServiceApi.post<Comment>(`/v1/comments/${commentId}/like`);
+    const response = await commentsServiceApi.post<Comment>(`/comments/${commentId}/like`);
     return response.data;
   },
 
@@ -54,7 +54,7 @@ export const commentService = {
    * Unlike a comment
    */
   async unlikeComment(commentId: string): Promise<Comment> {
-    const response = await commentsServiceApi.post<Comment>(`/v1/comments/${commentId}/unlike`);
+    const response = await commentsServiceApi.post<Comment>(`/comments/${commentId}/unlike`);
     return response.data;
   },
 
@@ -62,6 +62,6 @@ export const commentService = {
    * Delete a comment
    */
   async deleteComment(commentId: string): Promise<void> {
-    await commentsServiceApi.delete(`/v1/comments/${commentId}`);
+    await commentsServiceApi.delete(`/comments/${commentId}`);
   },
 };
