@@ -171,7 +171,7 @@ databases:
         tag: "7.0"
       database: "commentsdb"
       storage:
-        size: "2Gi"
+        size: "10Gi"
       resources:
         requests:
           memory: "128Mi"
