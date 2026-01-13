@@ -27,7 +27,7 @@ import java.util.logging.LogManager;
     ),
     servers = @Server(url = "http://localhost:8080")
 )
-@ApplicationPath("/v1")
+@ApplicationPath("/api/docs")
 public class DocsApplication extends Application {
     private static final Logger LOG = LogManager.getLogManager().getLogger(DocsApplication.class.getName());
     

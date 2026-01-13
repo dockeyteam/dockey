@@ -21,6 +21,6 @@ import javax.ws.rs.core.Application;
     servers = @Server(url = "http://localhost:8081")
 )
 // @LoginConfig(authMethod = "MP-JWT")  // Temporarily disabled - causing 401 on all endpoints
-@ApplicationPath("/v1")
+@ApplicationPath("/api/users")
 public class UsersApplication extends Application {
 }

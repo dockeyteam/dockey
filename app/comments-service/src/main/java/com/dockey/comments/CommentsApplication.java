@@ -7,7 +7,7 @@ import com.kumuluz.ee.logs.Logger;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
-@ApplicationPath("/api")
+@ApplicationPath("/api/comments")
 public class CommentsApplication extends Application {
 
     private static final Logger LOG = LogManager.getLogger(CommentsApplication.class.getName());
