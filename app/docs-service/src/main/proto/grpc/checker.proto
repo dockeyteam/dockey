@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.dockey.docs.grpc";
+option java_outer_classname = "CheckerProto";
+option objc_class_prefix = "CHCK";
+
+package grpc;
+
+service Checker {
+
+    rpc checkText(Text) returns (Check) {}
+}
+
+message Text {
+    string contents = 1;
+}
+
+message Check {
+    string result = 1;
+}
