@@ -32,6 +32,12 @@ spec:
         - |
           chown -R 1000:1000 /var/lib/zookeeper/data /var/lib/zookeeper/log
           chmod -R 755 /var/lib/zookeeper/data /var/lib/zookeeper/log
+          # Create myid file if it doesn't exist (for single node, use 1)
+          if [ ! -f /var/lib/zookeeper/data/myid ]; then
+            echo "1" > /var/lib/zookeeper/data/myid
+            chown 1000:1000 /var/lib/zookeeper/data/myid
+            chmod 644 /var/lib/zookeeper/data/myid
+          fi
         securityContext:
           runAsUser: 0
         volumeMounts:
