@@ -90,15 +90,14 @@ export const UserDetailPage = () => {
             <div className="avatar placeholder">
               <div className="bg-primary/20 text-primary rounded-full w-24">
                 <span className="text-3xl font-medium">
-                  {user.firstName?.[0]?.toUpperCase() || ''}
-                  {user.lastName?.[0]?.toUpperCase() || ''}
+                  {user.fullName?.[0]?.toUpperCase() || ''}
                 </span>
               </div>
             </div>
 
             <div>
               <h1 className="text-4xl font-light mb-2">
-                {user.firstName} {user.lastName}
+                {user.fullName}
               </h1>
               <div className="flex items-center gap-3 text-base-content/60">
                 <span>@{user.username}</span>
@@ -141,7 +140,7 @@ export const UserDetailPage = () => {
                 <div>
                   <label className="text-sm text-base-content/60">Full Name</label>
                   <p className="mt-1">
-                    {user.firstName} {user.lastName}
+                    {user.fullName}
                   </p>
                 </div>
 

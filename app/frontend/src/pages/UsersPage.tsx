@@ -132,14 +132,13 @@ export const UsersPage = () => {
                         <div className="avatar placeholder">
                           <div className="bg-primary/20 text-primary rounded-full w-10">
                             <span className="text-sm font-medium">
-                              {user.firstName?.[0]?.toUpperCase() || ''}
-                              {user.lastName?.[0]?.toUpperCase() || ''}
+                              {user.fullName?.[0]?.toUpperCase() || ''}
                             </span>
                           </div>
                         </div>
                         <div>
                           <div className="font-medium">
-                            {user.firstName} {user.lastName}
+                            {user.fullName}
                           </div>
                           <div className="text-sm text-base-content/60">
                             @{user.username}
