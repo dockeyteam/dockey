@@ -39,6 +39,16 @@ spec:
           value: "http://keycloak:8080"
         - name: KEYCLOAK_REALM
           value: "dockey"
+        - name: KEYCLOAK_ADMIN_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: keycloak-admin-secret
+              key: username
+        - name: KEYCLOAK_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: keycloak-admin-secret
+              key: password
         - name: KAFKA_BOOTSTRAP_SERVERS
           value: "kafka:9092"
         - name: KAFKA_CONSUMER_GROUP_ID

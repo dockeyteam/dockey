@@ -44,6 +44,16 @@ spec:
           value: {{ .Values.services.user.env.keycloakAuthServerUrl | quote }}
         - name: KEYCLOAK_REALM
           value: {{ .Values.services.user.env.keycloakRealm | quote }}
+        - name: KEYCLOAK_ADMIN_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: keycloak-admin-secret
+              key: username
+        - name: KEYCLOAK_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: keycloak-admin-secret
+              key: password
         - name: KAFKA_BOOTSTRAP_SERVERS
           value: {{ .Values.services.user.env.kafkaBootstrapServers | quote }}
         - name: KAFKA_CONSUMER_GROUP_ID
