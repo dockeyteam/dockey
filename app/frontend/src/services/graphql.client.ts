@@ -2,7 +2,16 @@ import { GraphQLClient } from 'graphql-request';
 import { API_CONFIG } from '../config/api.config';
 
 // GraphQL client for user-service
-const graphqlEndpoint = `${API_CONFIG.USER_SERVICE_URL}/graphql`;
+// GraphQLClient requires absolute URL, so we prepend origin for relative paths
+const getAbsoluteUrl = (path: string): string => {
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+  // Use window.location.origin to create absolute URL from relative path
+  return `${window.location.origin}${path}`;
+};
+
+const graphqlEndpoint = getAbsoluteUrl(`${API_CONFIG.USER_SERVICE_URL}/graphql`);
 
 export const graphqlClient = new GraphQLClient(graphqlEndpoint, {
   headers: (): Record<string, string> => {

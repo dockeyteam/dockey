@@ -6,8 +6,7 @@ export const USER_FIELDS = gql`
     id
     username
     email
-    firstName
-    lastName
+    fullName
     role
     createdAt
   }
@@ -28,6 +27,16 @@ export const GET_USER_BY_ID = gql`
   ${USER_FIELDS}
   query GetUserById($id: ID!) {
     userById(id: $id) {
+      ...UserFields
+    }
+  }
+`;
+
+// Query to get user by Keycloak ID
+export const GET_USER_BY_KEYCLOAK_ID = gql`
+  ${USER_FIELDS}
+  query GetUserByKeycloakId($keycloakId: String!) {
+    userByKeycloakId(keycloakId: $keycloakId) {
       ...UserFields
     }
   }

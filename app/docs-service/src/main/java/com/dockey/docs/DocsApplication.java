@@ -1,6 +1,6 @@
 package com.dockey.docs;
 
-import com.dockey.docs.services.KafkaCommentConsumer;
+import com.dockey.docs.kafka.CommentEventConsumer;
 import org.eclipse.microprofile.openapi.annotations.OpenAPIDefinition;
 import org.eclipse.microprofile.openapi.annotations.info.Contact;
 import org.eclipse.microprofile.openapi.annotations.info.Info;
@@ -32,16 +32,16 @@ public class DocsApplication extends Application {
     private static final Logger LOG = LogManager.getLogManager().getLogger(DocsApplication.class.getName());
     
     @Inject
-    private KafkaCommentConsumer kafkaCommentConsumer;
+    private CommentEventConsumer commentEventConsumer;
     
     // Observer triggers on application startup to ensure Kafka consumer initializes
     public void init(@Observes @Initialized(ApplicationScoped.class) Object init) {
         LOG.info("DocsApplication observer triggered - ApplicationScoped context initialized");
-        LOG.info("KafkaCommentConsumer injected: " + (kafkaCommentConsumer != null));
+        LOG.info("CommentEventConsumer injected: " + (commentEventConsumer != null));
         // Force bean initialization by calling toString() - this triggers @PostConstruct
-        if (kafkaCommentConsumer != null) {
-            kafkaCommentConsumer.toString();
-            LOG.info("KafkaCommentConsumer initialization triggered");
+        if (commentEventConsumer != null) {
+            commentEventConsumer.toString();
+            LOG.info("CommentEventConsumer initialization triggered");
         }
     }
 }

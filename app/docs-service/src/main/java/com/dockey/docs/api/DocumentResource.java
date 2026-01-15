@@ -4,7 +4,7 @@ import com.dockey.docs.dto.DocumentResponse;
 import com.dockey.docs.entities.Document;
 import com.dockey.docs.services.DocumentService;
 import com.dockey.docs.services.DocumentLineCommentService;
-import com.dockey.docs.services.KafkaCommentConsumer;
+import com.dockey.docs.kafka.CommentEventConsumer;
 import com.dockey.docs.grpc.CheckerClient;
 import com.kumuluz.ee.logs.LogManager;
 import com.kumuluz.ee.logs.Logger;
@@ -44,7 +44,7 @@ public class DocumentResource {
     
     // Injecting to ensure Kafka consumer starts at application startup
     @Inject
-    private KafkaCommentConsumer kafkaCommentConsumer;
+    private CommentEventConsumer commentEventConsumer;
     
     @GET
     @Operation(summary = "Get all documents", description = "Retrieve a list of all documents")

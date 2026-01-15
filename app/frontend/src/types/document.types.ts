@@ -75,7 +75,7 @@ export interface UpdateDocGroupRequest {
   technology?: string;
 }
 
-export interface LineCommentCountResponse {
+export interface DocumentLineCommentCounts {
   docId: number;
   lineCommentCounts: Record<number, number>;
 }

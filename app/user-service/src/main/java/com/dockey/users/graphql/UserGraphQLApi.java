@@ -29,6 +29,12 @@ public class UserGraphQLApi {
         return userService.getUser(id);
     }
     
+    @Query("userByKeycloakId")
+    @Description("Get user by Keycloak ID")
+    public User getUserByKeycloakId(@Name("keycloakId") String keycloakId) {
+        return userService.getUserByKeycloakId(keycloakId);
+    }
+    
     @Query("userByEmail")
     @Description("Get user by email")
     public User getUserByEmail(@Name("email") String email) {

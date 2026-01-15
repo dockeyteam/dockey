@@ -3,7 +3,8 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { docGroupService, documentService } from '../services';
 import { useDataCache } from '../context/DataCacheContext';
-import type { DocGroup, DocumentMetadata, Document } from '../types';
+import { CommentableContent } from '../components';
+import type { DocGroup, DocumentMetadata, DocumentResponse } from '../types';
 
 export const DocGroupDetailPage: React.FC = () => {
   const { groupName, docSlug } = useParams<{ groupName: string; docSlug?: string }>();
@@ -12,7 +13,7 @@ export const DocGroupDetailPage: React.FC = () => {
 
   const [group, setGroup] = useState<DocGroup | null>(null);
   const [documentsMetadata, setDocumentsMetadata] = useState<DocumentMetadata[]>([]);
-  const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
+  const [selectedDoc, setSelectedDoc] = useState<DocumentResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [docLoading, setDocLoading] = useState(false);
   const [hasLoadedDocs, setHasLoadedDocs] = useState(false);
@@ -307,7 +308,11 @@ export const DocGroupDetailPage: React.FC = () => {
               <div className="px-8 pb-8">
                 <article className="prose prose-lg max-w-none">
                   {selectedDoc.content ? (
-                    <div dangerouslySetInnerHTML={{ __html: selectedDoc.content }} />
+                    <CommentableContent
+                      docId={selectedDoc.id.toString()}
+                      content={selectedDoc.content}
+                      initialLineCounts={selectedDoc.lineCommentCounts}
+                    />
                   ) : (
                     <div className="text-center py-12 text-base-content/40">
                       <p>No content available</p>

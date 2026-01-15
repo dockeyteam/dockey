@@ -43,14 +43,15 @@ public class CommentService {
         try {
             MongoCollection<Document> collection = getCollection();
             
+            // Store dates in UTC for consistent handling
             Document doc = new Document()
                 .append("docId", comment.getDocId())
                 .append("lineNumber", comment.getLineNumber())
                 .append("userId", comment.getUserId())
                 .append("userName", comment.getUserName())
                 .append("content", comment.getContent())
-                .append("createdAt", Date.from(comment.getCreatedAt().atZone(ZoneId.systemDefault()).toInstant()))
-                .append("updatedAt", Date.from(comment.getUpdatedAt().atZone(ZoneId.systemDefault()).toInstant()))
+                .append("createdAt", Date.from(comment.getCreatedAt().atZone(ZoneId.of("UTC")).toInstant()))
+                .append("updatedAt", Date.from(comment.getUpdatedAt().atZone(ZoneId.of("UTC")).toInstant()))
                 .append("likedByUserIds", comment.getLikedByUserIds())
                 .append("likeCount", comment.getLikeCount())
                 .append("isDeleted", comment.isDeleted());
@@ -302,14 +303,15 @@ public class CommentService {
         comment.setUserName(doc.getString("userName"));
         comment.setContent(doc.getString("content"));
         
+        // Use UTC for consistent timezone handling across server/client
         Date createdAt = doc.getDate("createdAt");
         if (createdAt != null) {
-            comment.setCreatedAt(LocalDateTime.ofInstant(createdAt.toInstant(), ZoneId.systemDefault()));
+            comment.setCreatedAt(LocalDateTime.ofInstant(createdAt.toInstant(), ZoneId.of("UTC")));
         }
         
         Date updatedAt = doc.getDate("updatedAt");
         if (updatedAt != null) {
-            comment.setUpdatedAt(LocalDateTime.ofInstant(updatedAt.toInstant(), ZoneId.systemDefault()));
+            comment.setUpdatedAt(LocalDateTime.ofInstant(updatedAt.toInstant(), ZoneId.of("UTC")));
         }
         
         @SuppressWarnings("unchecked")

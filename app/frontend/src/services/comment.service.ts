@@ -13,8 +13,11 @@ export const commentService = {
   /**
    * Get all comments for a document
    */
-  async getCommentsByDocId(docId: string, lineNumber?: number): Promise<Comment[]> {
+  async getCommentsByDocId(docId: string, userId?: string, lineNumber?: number): Promise<Comment[]> {
     const params = new URLSearchParams({ docId });
+    if (userId) {
+      params.append('userId', userId);
+    }
     if (lineNumber !== undefined) {
       params.append('lineNumber', lineNumber.toString());
     }
@@ -25,9 +28,10 @@ export const commentService = {
   /**
    * Get comments for a specific line
    */
-  async getCommentsByLine(docId: string, lineNumber: number): Promise<Comment[]> {
+  async getCommentsByLine(docId: string, lineNumber: number, userId?: string): Promise<Comment[]> {
+    const params = userId ? `?userId=${encodeURIComponent(userId)}` : '';
     const response = await commentsServiceApi.get<Comment[]>(
-      `/comments/${docId}/line/${lineNumber}`
+      `/comments/doc/${docId}/line/${lineNumber}${params}`
     );
     return response.data;
   },
@@ -37,7 +41,7 @@ export const commentService = {
    */
   async getLineCommentCounts(docId: string): Promise<LineCommentCountResponse> {
     const response = await commentsServiceApi.get<LineCommentCountResponse>(
-      `/comments/${docId}/line-counts`
+      `/comments/doc/${docId}/counts`
     );
     return response.data;
   },

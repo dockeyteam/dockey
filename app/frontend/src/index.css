@@ -7,6 +7,126 @@
   --color-accent: oklch(0.7776 0.184 183.61);
 }
 
+/* Comment System Styles */
+.commentable-content {
+  position: relative;
+}
+
+.commentable-line {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  border-radius: 0.25rem;
+  transition: background-color 0.15s ease;
+}
+
+.commentable-line:hover {
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+.commentable-line.has-comments {
+  background-color: rgba(59, 130, 246, 0.08);
+  border-left: 2px solid rgba(59, 130, 246, 0.5);
+  padding-left: 0.5rem;
+  margin-left: -0.5rem;
+}
+
+.commentable-line.has-comments:hover {
+  background-color: rgba(59, 130, 246, 0.12);
+}
+
+.line-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.line-content p {
+  margin: 0;
+}
+
+.line-content h1,
+.line-content h2,
+.line-content h3,
+.line-content h4,
+.line-content h5,
+.line-content h6 {
+  margin-top: 0.5em;
+  margin-bottom: 0.25em;
+}
+
+.comment-gutter {
+  position: relative;
+  width: 2rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.commentable-line:hover .comment-gutter,
+.commentable-line.has-comments .comment-gutter {
+  opacity: 1;
+}
+
+/* Comment Dialog Animation */
+.comment-dialog-overlay {
+  animation: fadeIn 0.15s ease;
+}
+
+.comment-dialog-content {
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Comment Item Animations */
+.comment-item {
+  animation: commentFadeIn 0.2s ease;
+}
+
+@keyframes commentFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Pulse animation for new comment indicator */
+@keyframes pulse-blue {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0);
+  }
+}
+
+.comment-indicator-pulse {
+  animation: pulse-blue 2s infinite;
+}
+
 
 .topography-pattern {
     background-color: #1e1e1e;

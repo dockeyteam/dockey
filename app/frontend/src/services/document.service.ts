@@ -5,7 +5,7 @@ import type {
   DocumentMetadata,
   CreateDocumentRequest,
   UpdateDocumentRequest,
-  LineCommentCountResponse,
+  DocumentLineCommentCounts,
 } from '../types';
 
 export const documentService = {
@@ -46,8 +46,8 @@ export const documentService = {
   /**
    * Get line comment counts for a document
    */
-  async getLineCommentCounts(docId: number): Promise<LineCommentCountResponse> {
-    const response = await docsServiceApi.get<LineCommentCountResponse>(
+  async getLineCommentCounts(docId: number): Promise<DocumentLineCommentCounts> {
+    const response = await docsServiceApi.get<DocumentLineCommentCounts>(
       `/documents/${docId}/line-comment-counts`
     );
     return response.data;

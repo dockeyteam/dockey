@@ -1,9 +1,10 @@
 // API Configuration
+// Base paths match backend @ApplicationPath annotations
 export const API_CONFIG = {
-  // Use empty string for proxy mode (local dev), full URLs for Docker
-  USER_SERVICE_URL: import.meta.env.VITE_USER_SERVICE_URL || '',
-  DOCS_SERVICE_URL: import.meta.env.VITE_DOCS_SERVICE_URL || '',
-  COMMENTS_SERVICE_URL: import.meta.env.VITE_COMMENTS_SERVICE_URL || '',
+  // Use /api/* paths for both local dev (Vite proxy) and production (nginx proxy)
+  USER_SERVICE_URL: import.meta.env.VITE_USER_SERVICE_URL || '/api/users',
+  DOCS_SERVICE_URL: import.meta.env.VITE_DOCS_SERVICE_URL || '/api/docs',
+  COMMENTS_SERVICE_URL: import.meta.env.VITE_COMMENTS_SERVICE_URL || '/api/comments',
   TOKEN_REFRESH_BUFFER: 60 * 1000, // Refresh token 60 seconds before expiry
 };
 

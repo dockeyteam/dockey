@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, type ReactNode } from 'react';
-import type { DocGroup, Document } from '../types';
+import type { DocGroup, DocumentResponse } from '../types';
 
 interface DataCacheContextType {
   // Doc Groups
@@ -10,10 +10,10 @@ interface DataCacheContextType {
   groupDocuments: Map<number, any[]>;
   setGroupDocuments: (groupId: number, docs: any[]) => void;
   
-  // Individual documents
-  documents: Map<number, Document>;
-  setDocument: (id: number, doc: Document) => void;
-  getDocument: (id: number) => Document | undefined;
+  // Individual documents (with lineCommentCounts)
+  documents: Map<number, DocumentResponse>;
+  setDocument: (id: number, doc: DocumentResponse) => void;
+  getDocument: (id: number) => DocumentResponse | undefined;
   
   // Clear cache
   clearCache: () => void;
@@ -24,7 +24,7 @@ const DataCacheContext = createContext<DataCacheContextType | undefined>(undefin
 export const DataCacheProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [docGroups, setDocGroupsState] = useState<DocGroup[] | null>(null);
   const [groupDocuments, setGroupDocumentsState] = useState<Map<number, any[]>>(new Map());
-  const [documents, setDocumentsState] = useState<Map<number, Document>>(new Map());
+  const [documents, setDocumentsState] = useState<Map<number, DocumentResponse>>(new Map());
 
   const setDocGroups = (groups: DocGroup[]) => {
     setDocGroupsState(groups);
@@ -34,11 +34,11 @@ export const DataCacheProvider: React.FC<{ children: ReactNode }> = ({ children 
     setGroupDocumentsState(prev => new Map(prev).set(groupId, docs));
   };
 
-  const setDocument = (id: number, doc: Document) => {
+  const setDocument = (id: number, doc: DocumentResponse) => {
     setDocumentsState(prev => new Map(prev).set(id, doc));
   };
 
-  const getDocument = (id: number): Document | undefined => {
+  const getDocument = (id: number): DocumentResponse | undefined => {
     return documents.get(id);
   };
 

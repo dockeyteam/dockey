@@ -122,15 +122,17 @@ public class CommentEventConsumer {
             Integer lineNumber = event.getLineNumber();
             Integer newCount = event.getNewCommentCount();
 
+            // Use async methods that manage their own EntityManager and transaction
+            // This is required because we're in a background thread
             if (newCount != null && newCount > 0) {
                 // Update or create line comment count
-                documentLineCommentService.updateLineCommentCount(documentId, lineNumber, newCount);
+                documentLineCommentService.updateLineCommentCountAsync(documentId, lineNumber, newCount);
             } else if (newCount != null && newCount == 0) {
                 // Delete line comment count when no comments left
-                documentLineCommentService.deleteLineCommentCount(documentId, lineNumber);
+                documentLineCommentService.deleteLineCommentCountAsync(documentId, lineNumber);
             }
-
-            LOG.info("Updated line comment count for docId={} line={} count={}", 
+            
+            LOG.info("Processed comment count change for docId={} line={} newCount={}", 
                 documentId, lineNumber, newCount);
                 
         } catch (NumberFormatException e) {

@@ -5,8 +5,9 @@ export interface Comment {
   userId: string;
   userName: string;
   content: string;
-  createdAt: string;
-  updatedAt: string;
+  // Date can be ISO string or Java LocalDateTime array: [year, month, day, hour, minute, second, nano]
+  createdAt: string | number[];
+  updatedAt: string | number[];
   likeCount: number;
   likedByCurrentUser: boolean;
 }
@@ -18,3 +19,16 @@ export interface CreateCommentRequest {
 }
 
 export interface CommentResponse extends Comment {}
+
+export interface LineCommentCountResponse {
+  docId: string;
+  lineCounts: Record<number, number>;
+  totalComments: number;
+}
+
+export interface LineCommentState {
+  lineNumber: number;
+  commentCount: number;
+  isHovered: boolean;
+  isOpen: boolean;
+}

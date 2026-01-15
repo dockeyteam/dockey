@@ -12,7 +12,8 @@ import {
   DocumentDetailPage, 
   ProfilePage,
   UsersPage,
-  UserDetailPage
+  UserDetailPage,
+  UserProfilePage
 } from './pages';
 
 function App() {
@@ -68,6 +69,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile/:keycloakId"
+              element={
+                <ProtectedRoute>
+                  <UserProfilePage />
                 </ProtectedRoute>
               }
             />
