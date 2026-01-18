@@ -1,0 +1,64 @@
+{{- if .Values.services.checker.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: checker
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: checker
+spec:
+  replicas: {{ .Values.services.checker.replicas }}
+  selector:
+    matchLabels:
+      app: checker
+  template:
+    metadata:
+      labels:
+        app: checker
+    spec:
+      containers:
+        - name: checker
+          image: "{{ .Values.global.imageRegistry }}/{{ .Values.services.checker.image.repository }}:{{ .Values.services.checker.image.tag }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - name: grpc
+              containerPort: {{ .Values.services.checker.port }}
+          env:
+            {{- range $name, $value := .Values.services.checker.env }}
+            - name: {{ $name }}
+              value: {{ $value | quote }}
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.services.checker.port }}
+            initialDelaySeconds: {{ .Values.services.checker.healthCheck.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.services.checker.healthCheck.liveness.periodSeconds }}
+            timeoutSeconds: {{ .Values.services.checker.healthCheck.liveness.timeoutSeconds }}
+            failureThreshold: {{ .Values.services.checker.healthCheck.liveness.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.services.checker.port }}
+            initialDelaySeconds: {{ .Values.services.checker.healthCheck.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.services.checker.healthCheck.readiness.periodSeconds }}
+            timeoutSeconds: {{ .Values.services.checker.healthCheck.readiness.timeoutSeconds }}
+            failureThreshold: {{ .Values.services.checker.healthCheck.readiness.failureThreshold }}
+          resources:
+            {{- toYaml .Values.services.checker.resources | nindent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: checker
+  namespace: {{ .Values.global.namespace }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.services.checker.port }}
+      targetPort: {{ .Values.services.checker.port }}
+      protocol: TCP
+      name: grpc
+  selector:
+    app: checker
+{{- end }}

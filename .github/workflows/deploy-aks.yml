@@ -127,6 +127,20 @@ jobs:
           cache-from: ${{ github.event_name != 'pull_request' && inputs.no_cache != true && 'type=registry,ref=dockey.azurecr.io/frontend:buildcache' || '' }}
           cache-to: ${{ github.event_name != 'pull_request' && 'type=registry,ref=dockey.azurecr.io/frontend:buildcache,mode=max' || '' }}
 
+      - name: Build and push checker
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app/checker
+          push: ${{ github.event_name != 'pull_request' }}
+          build-args: |
+            BUILD_ENV=k8s
+          tags: |
+            ${{ env.REGISTRY }}/frontend:${{ env.IMAGE_TAG }}
+            ${{ env.REGISTRY }}/frontend:latest
+          no-cache: ${{ inputs.no_cache == true }}
+          cache-from: ${{ github.event_name != 'pull_request' && inputs.no_cache != true && 'type=registry,ref=dockey.azurecr.io/frontend:buildcache' || '' }}
+          cache-to: ${{ github.event_name != 'pull_request' && 'type=registry,ref=dockey.azurecr.io/frontend:buildcache,mode=max' || '' }}
+
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
