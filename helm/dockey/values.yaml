@@ -136,7 +136,7 @@ services:
         timeoutSeconds: 5
         failureThreshold: 5
 
-checker:
+  checker:
     enabled: true
     image:
       repository: checker-service
@@ -150,8 +150,6 @@ checker:
       limits:
         memory: "350Mi"
         cpu: "500m"
-    env:
-      JAVA_TOOL_OPTIONS: {{ .Values.global.javaOpts | quote }}
     healthCheck:
       liveness:
         initialDelaySeconds: 60

@@ -194,6 +194,7 @@ jobs:
             --set services.comments.image.tag=${{ env.IMAGE_TAG }} \
             --set services.docs.image.tag=${{ env.IMAGE_TAG }} \
             --set services.user.image.tag=${{ env.IMAGE_TAG }} \
+            --set services.frontend.image.tag=${{ env.IMAGE_TAG }} \
             --set services.frontend.image.tag=${{ env.IMAGE_TAG }}
 
       - name: Force pod restart to pull latest images

@@ -24,6 +24,8 @@ spec:
             - name: grpc
               containerPort: {{ .Values.services.checker.port }}
           env:
+            - name: JAVA_TOOL_OPTIONS
+              value: {{ .Values.global.javaOpts | quote }}
             {{- range $name, $value := .Values.services.checker.env }}
             - name: {{ $name }}
               value: {{ $value | quote }}
