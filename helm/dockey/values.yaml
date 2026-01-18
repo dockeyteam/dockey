@@ -298,7 +298,7 @@ auth:
 # Disable Prometheus for now to save ~100-200Mi RAM
 monitoring:
   prometheus:
-    enabled: false
+    enabled: enabled
     image:
       repository: prom/prometheus
       tag: latest
