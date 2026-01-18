@@ -135,8 +135,8 @@ jobs:
           build-args: |
             BUILD_ENV=k8s
           tags: |
-            ${{ env.REGISTRY }}/frontend:${{ env.IMAGE_TAG }}
-            ${{ env.REGISTRY }}/frontend:latest
+            ${{ env.REGISTRY }}/checker-service:${{ env.IMAGE_TAG }}
+            ${{ env.REGISTRY }}/checker-service:latest
           no-cache: ${{ inputs.no_cache == true }}
           cache-from: ${{ github.event_name != 'pull_request' && inputs.no_cache != true && 'type=registry,ref=dockey.azurecr.io/frontend:buildcache' || '' }}
           cache-to: ${{ github.event_name != 'pull_request' && 'type=registry,ref=dockey.azurecr.io/frontend:buildcache,mode=max' || '' }}
@@ -205,11 +205,6 @@ jobs:
           kubectl rollout restart deployment/docs-service -n dockey || true
           kubectl rollout restart deployment/comments-service -n dockey || true
           
-          # Wait for rollouts to complete
-          kubectl rollout status deployment/frontend -n dockey --timeout=120s || true
-          kubectl rollout status deployment/user-service -n dockey --timeout=120s || true
-          kubectl rollout status deployment/docs-service -n dockey --timeout=120s || true
-          kubectl rollout status deployment/comments-service -n dockey --timeout=120s || true
 
       - name: Verify deployment
         run: |
