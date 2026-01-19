@@ -30,6 +30,8 @@ services:
       keycloakRealm: "dockey"
       CHECKER_SERVICE_HOST: "checker"
       CHECKER_SERVICE_PORT: "50051"
+      CHECKER_PORT: "50051"
+      CHECKER_HOST: "checker"
     healthCheck:
       liveness:
         initialDelaySeconds: 180
@@ -155,15 +157,15 @@ services:
         cpu: "500m"
     healthCheck:
       liveness:
-        initialDelaySeconds: 180
+        initialDelaySeconds: 120
         periodSeconds: 30
         timeoutSeconds: 3
         failureThreshold: 3
       readiness:
-        initialDelaySeconds: 300
+        initialDelaySeconds: 120
         periodSeconds: 15
         timeoutSeconds: 3
-        failureThreshold: 3
+        failureThreshold: 5
 
 databases:
   postgres:

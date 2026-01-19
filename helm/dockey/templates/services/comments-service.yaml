@@ -41,6 +41,10 @@ spec:
           value: {{ .Values.services.comments.env.keycloakAuthServerUrl | quote }}
         - name: KEYCLOAK_REALM
           value: {{ .Values.services.comments.env.keycloakRealm | quote }}
+        {{- range $name, $value := .Values.services.comments.env }}
+        - name: {{ $name | upper }}
+          value: {{ $value | quote }}
+        {{- end }}
         resources:
           {{- toYaml .Values.services.comments.resources | nindent 10 }}
         livenessProbe:
