@@ -1,0 +1,12 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "COMMUNICATION_SERVICES_CONNECTION_STRING": "endpoint=https://your-comm-service.communication.azure.com/;accesskey=your-access-key",
+    "EMAIL_SENDER": "DoNotReply@dockey.example.com",
+    "APP_BASE_URL": "https://dockey.example.com",
+    "KEYCLOAK_URL": "http://keycloak:8080",
+    "KEYCLOAK_REALM": "dockey"
+  }
+}

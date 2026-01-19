@@ -1,0 +1,4 @@
+azure-functions
+azure-communication-email
+azure-identity
+requests
