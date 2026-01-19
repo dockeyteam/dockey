@@ -5,8 +5,7 @@ global:
   imageRegistry: dockey.azurecr.io
   imagePullPolicy: Always
   storageClass: managed-csi
-  # CRITICAL: Forces Java to use less RAM and release it back to the OS
-  javaOpts: "-XX:+UseSerialGC -Xss256k -XX:MaxRAMPercentage=75.0 -Djava.security.egd=file:/dev/./urandom"
+  
 
 services:
   comments:
@@ -24,7 +23,7 @@ services:
         memory: "350Mi" # Minimum viability for Spring Boot
         cpu: "500m"     # Allow CPU burst during startup
     env:
-      JAVA_TOOL_OPTIONS: ${{ .Values.global.javaOpts }}
+      JAVA_TOOL_OPTIONS: "-XX:+UseSerialGC -Xss256k -XX:MaxRAMPercentage=75.0 -Djava.security.egd=file:/dev/./urandom"
       mongodbDatabase: "commentsdb"
       kafkaBootstrapServers: "kafka:9092"
       keycloakAuthServerUrl: "http://keycloak:8080"
@@ -56,7 +55,7 @@ services:
         memory: "350Mi"
         cpu: "500m"
     env:
-      JAVA_TOOL_OPTIONS: ${{ .Values.global.javaOpts }}
+      JAVA_TOOL_OPTIONS: "-XX:+UseSerialGC -Xss256k -XX:MaxRAMPercentage=75.0 -Djava.security.egd=file:/dev/./urandom"
       databaseName: "docsdb"
       kafkaBootstrapServers: "kafka:9092"
       kafkaConsumerGroupId: "docs-service-group"
@@ -87,7 +86,7 @@ services:
         memory: "350Mi"
         cpu: "500m"
     env:
-      JAVA_TOOL_OPTIONS: ${{ .Values.global.javaOpts }}
+      JAVA_TOOL_OPTIONS: "-XX:+UseSerialGC -Xss256k -XX:MaxRAMPercentage=75.0 -Djava.security.egd=file:/dev/./urandom"
       databaseName: "usersdb"
       keycloakAuthServerUrl: "http://keycloak:8080"
       keycloakRealm: "dockey"
@@ -324,7 +323,7 @@ auth:
 # Disable Prometheus for now to save ~100-200Mi RAM
 monitoring:
   prometheus:
-    enabled: enabled
+    enabled: true
     image:
       repository: prom/prometheus
       tag: latest
