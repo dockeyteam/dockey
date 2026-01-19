@@ -28,6 +28,8 @@ services:
       kafkaBootstrapServers: "kafka:9092"
       keycloakAuthServerUrl: "http://keycloak:8080"
       keycloakRealm: "dockey"
+      CHECKER_SERVICE_HOST: "checker"
+      CHECKER_SERVICE_PORT: "50051"
     healthCheck:
       liveness:
         initialDelaySeconds: 180
