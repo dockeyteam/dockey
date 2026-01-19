@@ -82,15 +82,12 @@ spec:
           timeoutSeconds: 30
           failureThreshold: 3
         readinessProbe:
-          exec:
-            command:
-            - sh
-            - -c
-            - "nc -z localhost 9092"
-          initialDelaySeconds: 180
+          tcpSocket:
+              port: 9092
+          initialDelaySeconds: 90
           periodSeconds: 30
           timeoutSeconds: 30
-          failureThreshold: 3
+          failureThreshold: 5
   volumeClaimTemplates:
   - metadata:
       name: kafka-data
