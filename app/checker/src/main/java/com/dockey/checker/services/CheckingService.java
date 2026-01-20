@@ -37,8 +37,6 @@ public class CheckingService {
 
         LOG.info("Received response with content: {}", body);
         LOG.info("Received response with status: {}", status);
-        System.out.println("Status: " + status);
-        System.out.println("Body: " + body);
 
         // response.close();
         // client.close();
