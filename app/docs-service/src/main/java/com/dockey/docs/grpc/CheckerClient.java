@@ -1,18 +1,17 @@
 package com.dockey.docs.grpc;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import com.kumuluz.ee.logs.LogManager;
 import com.kumuluz.ee.logs.Logger;
 import com.dockey.docs.grpc.CheckerGrpc.CheckerBlockingStub;
-import com.dockey.docs.grpc.CheckerGrpc.CheckerStub;
-import com.google.protobuf.Message;
 import com.dockey.docs.entities.Document;
-import io.grpc.stub.StreamObserver;
-import io.grpc.Channel;
 import io.grpc.Grpc;
 import io.grpc.InsecureChannelCredentials;
 import io.grpc.ManagedChannel;
-import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
+
+import java.util.concurrent.TimeUnit;
 
 @ApplicationScoped
 public class CheckerClient {
