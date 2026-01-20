@@ -68,7 +68,7 @@ public class CheckerClient {
             CheckerBlockingStub stubWithDeadline = blockingStub.withDeadlineAfter(TIMEOUT_SECONDS, TimeUnit.SECONDS);
             Check response = stubWithDeadline.checkText(txtreq);
             
-            boolean isClean = "success".equals(response.getResult());
+            boolean isClean = !("flagged".equals(response.getResult()));
             logger.info("Content check result: {}", isClean ? "clean" : "flagged");
             return isClean;
         } catch (StatusRuntimeException e) {

@@ -21,14 +21,27 @@ public class CheckingService {
     public Response checkText(String text) {
         // just spits out the response for now
         LOG.info("Checking document with content: {}", text);
-        /* Response r = ClientBuilder.newClient()
-            .target("https://zylalabs.com/api/1216/inappropriate+text+detection+api/1056/detector?text=" +
-                    text)
-            .request()
-            .header("Authorization", "Bearer YOUR_API_KEY_HERE")
-            .get(Response.class); */
-        Response r = Response.ok().entity("{\"result\":\"success\"}").build(); 
-        return r;
+
+        // Build the JSON payload manually
+        String jsonBody = String.format("{\"message\":\"%s\"}", text);
+
+        Client client = ClientBuilder.newClient();
+        Response response = client.target("https://vector.profanity.dev/")
+                .request(MediaType.APPLICATION_JSON)
+                .post(Entity.entity(jsonBody, MediaType.APPLICATION_JSON));
+
+        // Read response status and body
+        int status = response.getStatus();
+        String body = response.readEntity(String.class);
+
+        LOG.info("Received response with content: {}", body);
+        LOG.info("Received response with status: {}", status);
+        System.out.println("Status: " + status);
+        System.out.println("Body: " + body);
+
+        // response.close();
+        // client.close();
+        return response;
     }
 
 
