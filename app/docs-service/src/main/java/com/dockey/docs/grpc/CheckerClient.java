@@ -47,23 +47,22 @@ public class CheckerClient {
     }
 
     /**
-     * Check comment text for inappropriate content.
+     * Check document text for inappropriate content.
      * This method is fault-tolerant - if the checker service is unavailable,
-     * it will allow the comment through (fail-open policy) to ensure the
-     * comments service remains functional.
+     * it will allow the document through (fail-open policy) to ensure the
+     * documents service remains functional.
      *
-     * @param comment The comment to check
-     * @return true if the comment is acceptable, false if it contains inappropriate content
+     * @param document The document to check
+     * @return true if the document is acceptable, false if it contains inappropriate content
      */
-    public boolean checkText(Comment comment) {
+    public boolean checkText(Document document) {
         if (!checkerAvailable || blockingStub == null) {
-            logger.info("Checker service not available, allowing comment through (fail-open)");
+            logger.info("Checker service not available, allowing document through (fail-open)");
             return true;
         }
 
         try {
-            logger.info("Checking document content for docId: {}", documnt.getId());
-
+            logger.info("Checking document content for docId: {}", document.getId());
             Text txtreq = Text.newBuilder().setContents(document.getContent()).build();
             
             // Create a new stub with deadline for this specific call
@@ -75,12 +74,12 @@ public class CheckerClient {
             return isClean;
         } catch (StatusRuntimeException e) {
             // Service unavailable, timeout, or other gRPC error - fail open
-            logger.warn("Checker service call failed ({}), allowing comment through: {}", 
+            logger.warn("Checker service call failed ({}), allowing document through: {}", 
                 e.getStatus().getCode(), e.getMessage());
             return true;
         } catch (Exception e) {
             // Unexpected error - fail open
-            logger.error("Unexpected error during content check, allowing comment through: {}", e.getMessage());
+            logger.error("Unexpected error during content check, allowing document through: {}", e.getMessage());
             return true;
         }
     }
