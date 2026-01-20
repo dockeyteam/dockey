@@ -196,15 +196,6 @@ jobs:
             --set services.user.image.tag=${{ env.IMAGE_TAG }} \
             --set services.frontend.image.tag=${{ env.IMAGE_TAG }} \
             --set services.checker-service.image.tag=${{ env.IMAGE_TAG }}
-
-      - name: Force pod restart to pull latest images - this once
-        run: |
-          # Restart deployments to ensure they pull the latest images
-          kubectl rollout restart deployment/frontend -n dockey || true
-          kubectl rollout restart deployment/user-service -n dockey || true
-          kubectl rollout restart deployment/docs-service -n dockey || true
-          kubectl rollout restart deployment/comments-service -n dockey || true
-          kubectl rollout restart deployment/checker-service -n dockey || true
           
 
       - name: Verify deployment
