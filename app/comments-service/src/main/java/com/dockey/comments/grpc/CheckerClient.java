@@ -75,7 +75,7 @@ public class CheckerClient {
             // Service unavailable, timeout, or other gRPC error - fail open
             logger.warn("Checker service call failed ({}), allowing comment through: {}", 
                 e.getStatus().getCode(), e.getMessage());
-            logger.info("Failed to check comment", e)
+            logger.info("Failed to check comment", e);
             return true;
         } catch (Exception e) {
             // Unexpected error - fail open
