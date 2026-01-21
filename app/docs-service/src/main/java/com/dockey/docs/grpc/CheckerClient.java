@@ -16,79 +16,22 @@ import java.util.concurrent.TimeUnit;
 @ApplicationScoped
 public class CheckerClient {
   
-    
-  
     private static final Logger logger = LogManager.getLogger(CheckerClient.class.getName());
-    private static final String CHECKER_HOST = System.getenv().getOrDefault("CHECKER_HOST", "dockey-checker");
-    private static final int CHECKER_PORT = Integer.parseInt(System.getenv().getOrDefault("CHECKER_PORT", "50051"));
-    private static final int TIMEOUT_SECONDS = 5;
 
-    private ManagedChannel channel;
-    private CheckerBlockingStub blockingStub;
-    private boolean checkerAvailable = false;
+    private final CheckerBlockingStub blockingStub;
 
+    private final ManagedChannel channel;
+    
     public CheckerClient() {
-        // Default constructor for CDI
+        channel = Grpc.newChannelBuilder("dockey-checker:50051", InsecureChannelCredentials.create()).build();
+        blockingStub = CheckerGrpc.newBlockingStub(channel);
     }
 
-    @PostConstruct
-    public void init() {
-        try {
-            String target = CHECKER_HOST + ":" + CHECKER_PORT;
-            logger.info("Initializing CheckerClient with target: {}", target);
-            channel = Grpc.newChannelBuilder(target, InsecureChannelCredentials.create()).build();
-            blockingStub = CheckerGrpc.newBlockingStub(channel).withDeadlineAfter(TIMEOUT_SECONDS, TimeUnit.SECONDS);
-            checkerAvailable = true;
-            logger.info("CheckerClient initialized successfully");
-        } catch (Exception e) {
-            logger.warn("Failed to initialize CheckerClient, content checking will be disabled: {}", e.getMessage());
-            checkerAvailable = false;
-        }
-    }
-
-    /**
-     * Check document text for inappropriate content.
-     * This method is fault-tolerant - if the checker service is unavailable,
-     * it will allow the document through (fail-open policy) to ensure the
-     * documents service remains functional.
-     *
-     * @param document The document to check
-     * @return true if the document is acceptable, false if it contains inappropriate content
-     */
     public boolean checkText(Document document) {
-        if (!checkerAvailable || blockingStub == null) {
-            logger.info("Checker service not available, allowing document through (fail-open)");
-            return true;
-        }
+        logger.info("Checking document with id: {}", document.getId());
 
-        try {
-            logger.info("Checking document content for docId: {}", document.getId());
-            Text txtreq = Text.newBuilder().setContents(document.getContent()).build();
-            
-            // Create a new stub with deadline for this specific call
-            CheckerBlockingStub stubWithDeadline = blockingStub.withDeadlineAfter(TIMEOUT_SECONDS, TimeUnit.SECONDS);
-            Check response = stubWithDeadline.checkText(txtreq);
-            
-            boolean isClean = !("flagged".equals(response.getResult()));
-            logger.info("Content check result: {}", isClean ? "clean" : "flagged");
-            return isClean;
-        } catch (StatusRuntimeException e) {
-            // Service unavailable, timeout, or other gRPC error - fail open
-            logger.warn("Checker service call failed ({}), allowing document through: {}", 
-                e.getStatus().getCode(), e.getMessage());
-            return true;
-        } catch (Exception e) {
-            // Unexpected error - fail open
-            logger.error("Unexpected error during content check, allowing document through: {}", e.getMessage());
-            return true;
-        }
-    }
+        Text txtreq = Text.newBuilder().setContents(document.getContent()).build();
 
-    /**
-     * Check if the checker service is available.
-     * @return true if the service is configured and reachable
-     */
-    public boolean isAvailable() {
-        return checkerAvailable && channel != null && !channel.isShutdown();
+        return (blockingStub.checkText(txtreq).getResult() != "profane");
     }
 }
