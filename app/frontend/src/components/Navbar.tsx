@@ -1,4 +1,5 @@
 import React from 'react';
+import logo from '../assets/logo.png';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -17,7 +18,8 @@ export const Navbar: React.FC = () => {
   return (
     <div className="navbar bg-base-100 border-b-2 border-base-300 sticky top-0 z-50 px-6 h-20">
       <div className="flex-1">
-        <Link to="/documents" className="text-2xl font-bold tracking-tight hover:opacity-80 transition-opacity">
+        <Link to="/documents" className="flex items-center gap-2 text-2xl font-bold tracking-tight hover:opacity-80 transition-opacity">
+          <img src={logo} alt="Dockey Logo" className="h-8 w-8 rounded" />
           Dockey
         </Link>
       </div>

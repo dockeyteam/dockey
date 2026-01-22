@@ -1,4 +1,4 @@
-# Secrets - NEVER commit secrets
+# Secrets
 k8s/secrets/*.yaml
 k8s/secrets/*.yml
 !k8s/secrets/README.md
@@ -19,6 +19,7 @@ k8s/secrets/*.yml
 *.swp
 *.swo
 *~
+.local/
 
 # OS
 .DS_Store

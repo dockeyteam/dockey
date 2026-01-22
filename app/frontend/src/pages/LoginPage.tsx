@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import logo from '../assets/logo.png';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
@@ -65,7 +66,8 @@ export const LoginPage: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 flex flex-col items-center">
+          <img src={logo} alt="Dockey Logo" className="h-24 w-24 mb-2 rounded" />
           <h1 className="text-4xl font-bold mb-2">Welcome Back</h1>
           <p className="text-base-content/70">Sign in to your Dockey account</p>
         </div>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import logo from '../assets/logo.png';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
@@ -68,7 +69,8 @@ export const RegisterPage: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 flex flex-col items-center">
+          <img src={logo} alt="Dockey Logo" className="h-14 w-14 mb-2 rounded" />
           <h1 className="text-4xl font-bold mb-2">Create Account</h1>
           <p className="text-base-content/70">Join Dockey to unlock more features</p>
         </div>
